@@ -22,5 +22,16 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
-  }
+  },
+  backgroundWhite: '#FFFFFF',
+  lightGrey: '#E5E7EB',
+  mediumGrey: '#6B7280',
+  darkGrey: '#1F2937',
+  lightBlue: '#E5E7EB',
+  mintGreen: '#10B981',
+  lightPeach: '#FFF7ED',
+  pinkCoral: '#F472B6',
+  bloompoYellow: '#FFF4C2',
+  bloompoYellowSaturated: '#F5B849',
+  babyBlue: '#84b1fa'
 };
