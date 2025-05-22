@@ -17,18 +17,11 @@ export default function RootLayout() {
     return null;
   }
 
-    const isLoggedIn = true;
-
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-         {!isLoggedIn ? (
-        <Stack.Screen name="(auth)" />
-      ) : (
-        <>
-          <Stack.Screen name="(tabs)" />
-        </>
-      )}
+       <Stack>    
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

@@ -1,3 +1,4 @@
+
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
@@ -34,16 +35,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="tracker"
+        name="pet"
         options={{
-          title: 'Tracker',
+          title: 'Pet',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="pet"
+        name="tracker"
         options={{
-          title: 'Pet',
+          title: 'Tracker',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
@@ -55,6 +56,5 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-    
   );
 }
