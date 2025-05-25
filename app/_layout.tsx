@@ -11,6 +11,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const loggedIn = true;
 
   if (!loaded) {
     // Async font loading only occurs in development.
@@ -19,10 +20,16 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-       <Stack>    
+      {!loggedIn ?
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        </Stack>
+        :
+        <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
-      </Stack>
+        </Stack>
+      }
       <StatusBar style="auto" />
     </ThemeProvider>
   );

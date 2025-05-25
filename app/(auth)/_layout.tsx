@@ -9,7 +9,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Stack } from 'expo-router';
 
-export default function TabLayout() {
+export default function AuthLayout() {
   const colorScheme = useColorScheme();
 
   return (
