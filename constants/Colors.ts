@@ -33,5 +33,8 @@ export const Colors = {
   pinkCoral: '#F472B6',
   bloompoYellow: '#FFF4C2',
   bloompoYellowSaturated: '#F5B849',
-  babyBlue: '#84b1fa'
+  babyBlue: '#84b1fa',
+  backgroundBloompo: '#FDF2DA',
+  lettersBloompo: '#5F3820',
+  wingsBloompo: '#C3E0DE',
 };
