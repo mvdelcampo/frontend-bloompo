@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import {
     SafeAreaView,
     TextInput,
@@ -12,10 +13,26 @@ import {
 import { Colors } from "@/constants/Colors";
 
 export default function LoginScreen() {
+    const router = useRouter();
+
+    const handleLogin = () => {
+    // TODO logica de autenticacion
+    // Si es exitosa:
+    router.replace('/(tabs)'); // Redirige al layout de tabs
+  };
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                <Text style={styles.appName}>BLOOMPO</Text>
+                <View style={styles.header}>
+                    <Text style={styles.appName}>BLOOMPO</Text>
+                    <Image
+                                        source={require('../../assets/icons/bloompo-icon.png')}
+                                        style={styles.headerIcon}
+                                        resizeMode="contain"
+                                      />
+                </View>
+                
                 <View style={styles.imageContainer}>
                     <Image
                         style={styles.image}
@@ -35,16 +52,17 @@ export default function LoginScreen() {
             />
         <TouchableOpacity
             style={styles.button1}
-            onPress={() => console.log("Iniciar sesión")}
+            onPress={handleLogin}
         >
             <Text style={styles.buttonText}>Iniciar sesión</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
             style={styles.button2}
-            onPress={() => console.log("Registrarse")}
+            onPress={() => router.push("/(auth)/register")}
         >
-            <Text style={styles.buttonText}>¿No tienes una cuenta aún?</Text>
+                        <Text style={styles.buttonText}>¿No tienes cuenta aún?</Text>
+                        <Text style={styles.buttonText}>¡Regístrate!</Text>
         </TouchableOpacity>
                 </View>
             </View>
@@ -65,6 +83,16 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start", // alineamos todo arriba
         alignItems: "center",
     },
+    header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+   
+  },
+     headerIcon: {
+    width: 80,
+    height: 80,
+  },
     appName: {
         color: Colors.lettersBloompo,
         fontSize: 48,
@@ -126,10 +154,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 6,
     paddingHorizontal: 20,
+      justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
     color: Colors.lettersBloompo,
     fontSize: 16,
     fontWeight: "600",
+    
   }
 });
