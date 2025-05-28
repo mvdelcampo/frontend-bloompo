@@ -73,13 +73,13 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: Colors.backgroundBloompo,
+        backgroundColor: Colors.backgroundWhite,
     },
     container: {
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 50, // deja el texto arriba, separado del borde
-        backgroundColor: Colors.backgroundBloompo,
+        backgroundColor: Colors.backgroundWhite,
         justifyContent: "flex-start", // alineamos todo arriba
         alignItems: "center",
     },
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.lettersBloompo,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     
   }
 });

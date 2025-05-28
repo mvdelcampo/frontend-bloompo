@@ -17,6 +17,7 @@ export default function AuthLayout() {
       screenOptions={{
         headerShown: false,
         headerTitleAlign: 'center',
+        title: ''
       }}
     >
       <Stack.Screen name="login" options={{ title: 'Iniciar sesión' }} />

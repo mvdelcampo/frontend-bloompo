@@ -18,6 +18,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarShowLabel: false,
         headerShown: false,
+        title: '',
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarIconStyle: {
@@ -32,6 +33,7 @@ export default function TabLayout() {
             paddingTop: 7
           },
           default: {},
+          
         }),
       }}>
       <Tabs.Screen
@@ -45,8 +47,9 @@ export default function TabLayout() {
         name="tracker"
         options={{
           title: 'Tracker',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet" color={color}/>,
         }}
+        
       />
       <Tabs.Screen
         name="pet"
