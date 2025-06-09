@@ -96,8 +96,7 @@ const styles = StyleSheet.create({
     appName: {
         color: Colors.lettersBloompo,
         fontSize: 48,
-        fontWeight: "bold",
-        fontFamily: "Fredoka",
+        fontFamily: "Baloo2ExtraBold",
     },
     imageContainer: {
         width: "100%",

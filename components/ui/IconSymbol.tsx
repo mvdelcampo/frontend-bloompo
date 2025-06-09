@@ -22,7 +22,8 @@ const MAPPING = {
   'plus.circle': 'add-circle-outline',
   'list.bullet': 'list',
   'pawprint': 'pets',
-  'person.fill': 'person'
+  'person.fill': 'person',
+  'pencil': 'edit'
 } as IconMapping;
 
 /**

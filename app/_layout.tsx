@@ -10,7 +10,10 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    Fredoka: require('../assets/fonts/Fredoka-VariableFont_wdth,wght.ttf')
+    Fredoka: require('../assets/fonts/Fredoka-VariableFont_wdth,wght.ttf'),
+    Baloo2: require('../assets/fonts/Baloo2-VariableFont_wght.ttf'),
+    Baloo2Bold: require('../assets/fonts/Baloo2-Bold.ttf'),
+    Baloo2ExtraBold: require('../assets/fonts/Baloo2-ExtraBold.ttf')
   });
   const loggedIn = false;
 
@@ -27,7 +30,7 @@ export default function RootLayout() {
         </Stack>
         :
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false, title: ''}} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '', gestureEnabled: true}} />
           <Stack.Screen name="+not-found" />
         </Stack>
       }

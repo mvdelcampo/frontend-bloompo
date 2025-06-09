@@ -17,18 +17,18 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
-
-// TODO ranking
+import { useRouter } from "expo-router";
+ 
 
 const groupsColors = [
-  Colors.strongPeach,
+	Colors.strongPeach,
 	Colors.bloompoYellow,
 	Colors.mintGreen,
 	Colors.pinkCoral,
 	Colors.bloompoYellowSaturated,
 	Colors.babyBlue,
-	Colors.lightBlue,
-	Colors.lightPeach,
+	Colors.strongBlue,
+	Colors.strongPeach,
 ];
 const groupsNames = [
 	"Telematicos",
@@ -84,7 +84,27 @@ const habits = [
 	},
 ];
 
+const ranking = [
+	{
+		name: "Usuario1",
+		score: 100,
+		userPhoto: require("../../assets/images/gymhabit.jpg"),
+	},
+	{
+		name: "Usuario2",
+		score: 90,
+		userPhoto: require("../../assets/images/gymhabit.jpg"),
+	},
+	{
+		name: "Usuario3",
+		score: 80,
+		userPhoto: require("../../assets/images/gymhabit.jpg"),
+	},
+];
+
 export default function TrackerScreen() {
+	const router = useRouter();
+
 	const handlePressGroup = (group: string) => {
 		console.log(`Grupo seleccionado: ${group}`);
 		// TODO cambiar de grupo y actualizar lo que se muestra
@@ -95,19 +115,43 @@ export default function TrackerScreen() {
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
 					{/* Header */}
-					<View style={styles.headerLeft}>
-						<Text style={styles.headerTitle}>Bloompo</Text>
-						<Image
-							source={require("../../assets/icons/bloompo-icon.png")}
-							style={styles.headerIcon}
-							resizeMode="contain"
-						/>
+					<View style={styles.header}>
+						<View style={styles.headerLeft}>
+							<Text style={styles.headerTitle}>Bloompo</Text>
+							<Image
+								source={require("../../assets/icons/bloompo-icon.png")}
+								style={styles.headerIcon}
+								resizeMode="contain"
+							/>
+						</View>
+						<View style={styles.headerRight}>
+							<TouchableOpacity
+								style={styles.headerActionIcon}
+								onPress={() => router.push("/tracker/edit-group")}
+							>
+								<IconSymbol
+									name="pencil"
+									size={26}
+									color="black"
+								/>
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								onPress={() => router.push("/tracker/create-group")}
+							>
+								<IconSymbol
+									name="plus.circle"
+									size={26}
+									color="black"
+								/>
+							</TouchableOpacity>
+						</View>
 					</View>
-					<View style={styles.header}></View>
+					{/* Groups */}
 					<ScrollView
 						horizontal
 						showsHorizontalScrollIndicator={false}
-						style={{ maxHeight: 100 }}
+						style={{ maxHeight: 100}}
 					>
 						{groupsNames.map((name, index) => (
 							<TouchableOpacity
@@ -131,6 +175,36 @@ export default function TrackerScreen() {
 							</TouchableOpacity>
 						))}
 					</ScrollView>
+					{/* Ranking */}
+					<View style={styles.rankingContainer}>
+						<FlatList
+							data={ranking}
+							keyExtractor={(item, index) => index.toString()}
+							horizontal
+							showsHorizontalScrollIndicator={false}
+							renderItem={({ item, index }) => (
+								<>
+									<View style={styles.rankItem}>
+										<Text style={styles.rank}>
+											#{index + 1}
+										</Text>
+										<Image
+											source={item.userPhoto} 
+											style={styles.avatar}
+										/>
+										<Text style={styles.text}>
+											{item.name}
+										</Text>
+										<Text style={styles.text}>
+											{item.score} pts
+										</Text>
+									</View>
+								</>
+							)}
+						/>
+					</View>
+
+					{/* Selected group habits */}
 					<FlatList
 						data={habits}
 						keyExtractor={(item, index) => index.toString()}
@@ -206,6 +280,17 @@ const styles = StyleSheet.create({
 		flex: 1,
 		paddingHorizontal: 20,
 	},
+	rankingContainer: {
+		paddingVertical: 5,
+		
+	},
+	rankItem: {
+		flexDirection: "column",
+		gap: 1,
+		alignItems: "center",
+		justifyContent: "center",
+		margin: 5,
+	},
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -215,6 +300,13 @@ const styles = StyleSheet.create({
 	headerLeft: {
 		flexDirection: "row",
 		alignItems: "center",
+	},
+	headerRight: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	headerActionIcon: {
+		marginRight: 12,
 	},
 	headerTitle: {
 		fontSize: 28,
@@ -233,12 +325,31 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		alignContent: "center",
 		justifyContent: "center",
+		marginBottom: 5,
+	},
+	title: {
+		color: Colors.lettersBloompo,
+		fontSize: 16,
+		fontWeight: "bold",
+		fontFamily: "Fredoka",
+		alignContent: "center",
+		textAlign: "center",
+	},
+	rank: {
+		color: Colors.lettersBloompo,
+		fontSize: 16,
+		fontWeight: "bold",
+		fontFamily: "Fredoka",
+		alignContent: "center",
+		textAlign: "center",
 	},
 	text: {
 		color: Colors.darkGrey,
 		fontWeight: "bold",
 		textAlign: "center",
 		fontSize: 12,
+		marginTop: 5,
+		marginRight: 5,
 	},
 	text2: {
 		color: Colors.lettersBloompo,
@@ -296,16 +407,16 @@ const styles = StyleSheet.create({
 		color: Colors.lettersBloompo,
 		fontSize: 16,
 		textAlign: "center",
-    width: 25,
-    fontFamily: "Fredoka",
+		width: 25,
+		fontFamily: "Fredoka",
 	},
 
 	dayCircle: {
 		width: 15,
 		height: 15,
 		borderRadius: 10,
-    marginTop: 4,
-    marginBottom: 4,
+		marginTop: 4,
+		marginBottom: 4,
 		marginHorizontal: 5,
 	},
 

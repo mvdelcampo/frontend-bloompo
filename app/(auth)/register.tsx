@@ -10,8 +10,11 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { useRouter } from "expo-router";
 
 export default function RegisterScreen() {
+    const router = useRouter();
+    
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
@@ -54,13 +57,9 @@ export default function RegisterScreen() {
                         style={styles.input}
                         placeholder="***************"
                     />
-                    <Text style={styles.label}>¿Quieres agregar una foto de perfil?</Text>
-            
                     <TouchableOpacity
                         style={styles.button1}
-                        onPress={() => {
-                            console.log("Register pressed");
-                        }}
+                        onPress={() => router.push("/(auth)/add-photo")}
                     >
                         <Text style={styles.buttonText}>Crear cuenta</Text>
                     </TouchableOpacity>
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
         color: Colors.lettersBloompo,
         fontSize: 48,
         fontWeight: "bold",
-        fontFamily: "Fredoka",
+        fontFamily: "Baloo2ExtraBold",
     },
     title: {
         color: Colors.lettersBloompo,
@@ -149,7 +148,7 @@ const styles = StyleSheet.create({
     },
     label: {
         color: Colors.lettersBloompo, // marrón oscuro
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "700",
         fontFamily: "Fredoka",
     },
@@ -162,7 +161,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: Colors.lettersBloompo,
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "700",
     },
 });
