@@ -1,75 +1,134 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { View, Text, Image, FlatList, Dimensions, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function PetScreen() {
+  const petsData = [
+    {
+      id: '1',
+      name: 'Bloompi',
+      group: 'Fitness Team',
+      image: require('../../assets/images/bloompo.png'),
+      health: 7, // valor de 0 a 10
+    },
+    {
+      id: '2',
+      name: 'Pipi',
+      group: 'El mejor equipo',
+      image: require('../../assets/images/bloompo-sad.png'),
+      health: 3, // valor de 0 a 10
+    },
+
+    // ...otros grupos/mascotas
+  ];
+
+  const screenWidth = Dimensions.get('window').width;
+
+  const renderPet = ({ item }: any) => (
+    <View style={[styles.petContainer, { width: screenWidth }]}>
+      <Text style={styles.petName}>{item.name}</Text>
+      <Text style={styles.groupName}>{item.group}</Text>
+      <Image source={item.image} style={styles.petImage} />
+
+      <View style={styles.healthBarBackground}>
+        <View style={[styles.healthBarFill, {
+          width: `${item.health * 10}%`,
+          backgroundColor: item.health > 5 ? '#10B981' : '#F59E0B',
+        }]} />
+      </View>
+    </View>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.storeContainer}>
+          <Text>Coins</Text>
+          <Text>Store</Text>
+        </View>
+
+        {/* Feed */}
+        <FlatList
+          data={petsData}
+          horizontal
+          pagingEnabled
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.feedContainer}
+          showsHorizontalScrollIndicator={false}
+          renderItem={renderPet}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">PET</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#BFE8FF',
+  },
+  container: {
+    flex: 1,
+  },
+  storeContainer: {
+    alignItems: 'flex-end',
+    paddingRight: 10
+  },
+  feedContainer: {
+    // paddingBottom: 24,
+  },
+  postContainer: {
+    marginBottom: 24,
+  },
+
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  rightHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  coinsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  coinIcon: {
+    marginLeft: 2,
+  },
+  petContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  petName: {
+    fontSize: 26,
+    fontWeight: '600',
+    // marginBottom: 6,
+    color: '#1F2937',
+  },
+  groupName: {
+    fontSize: 18,
+    color: '#6B7280',
+    //marginBottom: 16,
+  },
+  petImage: {
+    width: 370,
+    height: 370,
+    resizeMode: 'contain',
+  },
+  healthBarBackground: {
+    height: 14,
+    width: 200,
+    borderRadius: 7,
+    backgroundColor: '#E5E7EB',
+    marginTop: 16,
+    overflow: 'hidden',
+  },
+  healthBarFill: {
+    height: 14,
+    borderRadius: 7,
   },
 });

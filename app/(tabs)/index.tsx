@@ -38,7 +38,7 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>Bloompo</Text>
+          <Text style={styles.headerTitle}>BLOOMPO</Text>
           <Image
             source={require('../../assets/icons/bloompo-icon.png')}
             style={styles.headerIcon}
@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontStyle: 'italic',
-    fontWeight: 'bold',
+    fontWeight: 'heavy',
+    fontFamily: "Baloo2Bold",
     marginRight: 5,
   },
   headerIcon: {
