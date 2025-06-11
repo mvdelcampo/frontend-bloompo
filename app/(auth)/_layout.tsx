@@ -20,9 +20,9 @@ export default function AuthLayout() {
         title: ''
       }}
     >
-      <Stack.Screen name="login" options={{ title: 'Iniciar sesión' }} />
-      <Stack.Screen name="register" options={{ title: 'Registrarse' }} />
-      <Stack.Screen name="add-photo" options={{ title: 'Agregar foto', gestureEnabled: false }} />
+      <Stack.Screen name="login" options={{ title: 'Iniciar sesión', headerShown: false }} />
+      <Stack.Screen name="register" options={{ title: 'Registrarse', headerShown: false}} />
+      <Stack.Screen name="add-photo" options={{ title: 'Agregar foto', headerShown: false, gestureEnabled: false }} />
     </Stack>
     
   );
