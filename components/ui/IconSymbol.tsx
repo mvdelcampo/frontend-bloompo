@@ -25,7 +25,9 @@ const MAPPING = {
   'person.fill': 'person',
   'pencil': 'edit',
   'hand.thumbsup': 'thumb-up',
-  'hand.thumbsdown': 'thumb-down'
+  'checkmark.circle': 'check',
+  'xmark.circle': 'cancel'
+
 } as IconMapping;
 
 /**

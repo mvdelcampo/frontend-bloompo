@@ -1,8 +1,12 @@
 import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
+
+  const router = useRouter();
+
   const posts = [
     {
       id: '1',
@@ -46,7 +50,7 @@ export default function HomeScreen() {
             />
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity onPress={() => console.log('Notificaciones')} style={styles.headerActionIcon}>
+            <TouchableOpacity onPress={() => router.push("/invitation/invitations")} style={styles.headerActionIcon}>
               <IconSymbol name="bell" size={26} color="black" />
             </TouchableOpacity>
 
