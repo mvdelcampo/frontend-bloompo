@@ -26,11 +26,6 @@ export default function LoginScreen() {
             <View style={styles.container}>
                 <View style={styles.header}>
                     <Text style={styles.appName}>BLOOMPO</Text>
-                    <Image
-                                        source={require('../../assets/icons/bloompo-icon.png')}
-                                        style={styles.headerIcon}
-                                        resizeMode="contain"
-                                      />
                 </View>
                 
                 <View style={styles.imageContainer}>
