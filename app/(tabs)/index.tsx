@@ -54,7 +54,7 @@ export default function HomeScreen() {
               <IconSymbol name="bell" size={26} color="black" />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => console.log('Nueva publicación')}>
+            <TouchableOpacity onPress={() =>  router.push("/create-post/camera")}>
               <IconSymbol name="plus.circle" size={26} color="black" />
             </TouchableOpacity>
           </View>
