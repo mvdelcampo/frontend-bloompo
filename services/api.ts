@@ -1,4 +1,6 @@
 import axios from 'axios';
+//import * as SecureStore from 'expo-secure-store';
+//import type { AxiosRequestConfig, AxiosError } from 'axios';
 
 const API = axios.create({
   baseURL: 'http://18.218.161.157:3000',
@@ -7,6 +9,20 @@ const API = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+/*
+// Interceptor para incluir el token JWT
+API.interceptors.request.use(
+  async (config: AxiosRequestConfig) => {
+    const token = await SecureStore.getItemAsync('jwtToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error: AxiosError) => Promise.reject(error)
+);
+*/
 
 export const login = (userData: {
   mail: string;
