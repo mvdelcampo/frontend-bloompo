@@ -18,7 +18,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
- 
 
 const groupsColors = [
 	Colors.strongPeach,
@@ -100,6 +99,16 @@ const ranking = [
 		score: 80,
 		userPhoto: require("../../assets/images/gymhabit.jpg"),
 	},
+	{
+		name: "Usuario4",
+		score: 70,
+		userPhoto: require("../../assets/images/gymhabit.jpg"),
+	},
+	{
+		name: "Usuario5",
+		score: 60,
+		userPhoto: require("../../assets/images/gymhabit.jpg"),
+	},
 ];
 
 export default function TrackerScreen() {
@@ -114,157 +123,164 @@ export default function TrackerScreen() {
 		<>
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
-					{/* Header */}
-					<View style={styles.header}>
-						<View style={styles.headerLeft}>
-							<Text style={styles.headerTitle}>Bloompo</Text>
-							<Image
-								source={require("../../assets/icons/bloompo-icon.png")}
-								style={styles.headerIcon}
-								resizeMode="contain"
-							/>
-						</View>
-						<View style={styles.headerRight}>
-							<TouchableOpacity
-								style={styles.headerActionIcon}
-								onPress={() => router.push("/tracker/edit-group")}
-							>
-								<IconSymbol
-									name="pencil"
-									size={26}
-									color="black"
-								/>
-							</TouchableOpacity>
-
-							<TouchableOpacity
-								onPress={() => router.push("/tracker/create-group")}
-							>
-								<IconSymbol
-									name="plus.circle"
-									size={26}
-									color="black"
-								/>
-							</TouchableOpacity>
-						</View>
-					</View>
 					{/* Groups */}
-					<ScrollView
-						horizontal
-						showsHorizontalScrollIndicator={false}
-						style={{ maxHeight: 100}}
-					>
-						{groupsNames.map((name, index) => (
-							<TouchableOpacity
-								key={index}
-								onPress={() => handlePressGroup(name)}
-							>
-								<View
-									key={index}
-									style={[
-										styles.box,
-										{
-											backgroundColor:
-												groupsColors[
-													index % groupsColors.length
-												],
-										},
-									]}
+					<View style={styles.section}>
+						<View style={styles.header}>
+							<Text style={styles.sectionText}>Grupos</Text>
+							<View style={styles.headerRight}>
+								<TouchableOpacity
+									style={styles.headerActionIcon}
+									onPress={() =>
+										router.push("/tracker/edit-group")
+									}
 								>
-									<Text style={styles.text}>{name}</Text>
-								</View>
-							</TouchableOpacity>
-						))}
-					</ScrollView>
-					{/* Ranking */}
-					<View style={styles.rankingContainer}>
-						<FlatList
-							data={ranking}
-							keyExtractor={(item, index) => index.toString()}
+									<IconSymbol
+										name="pencil"
+										size={26}
+										color="black"
+									/>
+								</TouchableOpacity>
+
+								<TouchableOpacity
+									onPress={() =>
+										router.push("/tracker/create-group")
+									}
+								>
+									<IconSymbol
+										name="plus.circle"
+										size={26}
+										color="black"
+									/>
+								</TouchableOpacity>
+							</View>
+						</View>
+
+						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}
-							renderItem={({ item, index }) => (
-								<>
-									<View style={styles.rankItem}>
-										<Text style={styles.rank}>
-											#{index + 1}
-										</Text>
-										<Image
-											source={item.userPhoto} 
-											style={styles.avatar}
-										/>
-										<Text style={styles.text}>
-											{item.name}
-										</Text>
-										<Text style={styles.text}>
-											{item.score} pts
-										</Text>
+							style={{ maxHeight: 100, marginHorizontal: 10 }}
+						>
+							{groupsNames.map((name, index) => (
+								<TouchableOpacity
+									key={index}
+									onPress={() => handlePressGroup(name)}
+								>
+									<View
+										key={index}
+										style={[
+											styles.box,
+											{
+												backgroundColor:
+													groupsColors[
+														index %
+															groupsColors.length
+													],
+											},
+										]}
+									>
+										<Text style={styles.text}>{name}</Text>
 									</View>
-								</>
-							)}
-						/>
+								</TouchableOpacity>
+							))}
+						</ScrollView>
+					</View>
+
+					{/* Ranking */}
+					<View style={styles.section}>
+						<Text style={styles.sectionText}>Ranking</Text>
+						<View style={styles.rankingContainer}>
+							<FlatList
+								data={ranking}
+								keyExtractor={(item, index) => index.toString()}
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								renderItem={({ item, index }) => (
+									<>
+										<View style={styles.rankItem}>
+											<Text style={styles.rank}>
+												#{index + 1}
+											</Text>
+											<Image
+												source={item.userPhoto}
+												style={styles.avatar}
+											/>
+											<Text style={styles.text}>
+												{item.name}
+											</Text>
+											<Text style={styles.text}>
+												{item.score} pts
+											</Text>
+										</View>
+									</>
+								)}
+							/>
+						</View>
 					</View>
 
 					{/* Selected group habits */}
-					<FlatList
-						data={habits}
-						keyExtractor={(item, index) => index.toString()}
-						renderItem={({ item }) => (
-							<View style={styles.card}>
-								<View style={styles.habitHeader}>
-									<Image
-										source={item.userPhoto}
-										style={styles.avatar}
-									/>
-									<Text style={styles.habitTitle}>
-										{item.name}
-									</Text>
-								</View>
-								<View style={styles.habitCompletion}>
-									<View style={styles.daysContainer}>
-										<View style={styles.daysRow}>
-											{Object.keys(
-												item.daysCompleted
-											).map((day) => (
-												<Text
-													key={day}
-													style={styles.dayLabel}
-												>
-													{day}
-												</Text>
-											))}
-										</View>
-										<View style={styles.daysRow}>
-											{Object.values(
-												item.daysCompleted
-											).map((completed, index) => (
-												<View
-													key={index}
-													style={[
-														styles.dayCircle,
-														{
-															backgroundColor:
-																completed
-																	? Colors.strongPeach
-																	: Colors.lightGrey,
-														},
-													]}
-												/>
-											))}
-										</View>
+					<View style={styles.habitsSection}>
+						<Text style={styles.sectionText}>Hábitos</Text>
+						<FlatList
+							data={habits}
+							keyExtractor={(item, index) => index.toString()}
+							renderItem={({ item }) => (
+								<View style={styles.card}>
+									<View style={styles.habitHeader}>
+										<Image
+											source={item.userPhoto}
+											style={styles.avatar}
+										/>
+										<Text style={styles.habitTitle}>
+											{item.name}
+										</Text>
 									</View>
+									<View style={styles.habitCompletion}>
+										<View style={styles.daysContainer}>
+											<View style={styles.daysRow}>
+												{Object.keys(
+													item.daysCompleted
+												).map((day) => (
+													<Text
+														key={day}
+														style={styles.dayLabel}
+													>
+														{day}
+													</Text>
+												))}
+											</View>
+											<View style={styles.daysRow}>
+												{Object.values(
+													item.daysCompleted
+												).map((completed, index) => (
+													<View
+														key={index}
+														style={[
+															styles.dayCircle,
+															{
+																backgroundColor:
+																	completed
+																		? Colors.strongPeach
+																		: Colors.lightGrey,
+															},
+														]}
+													/>
+												))}
+											</View>
+										</View>
 
-									<Text style={styles.text2}>
-										{
-											Object.values(
-												item.daysCompleted
-											).filter(Boolean).length
-										}{" "}
-										/ {item.frequency}
-									</Text>
+										<Text style={styles.text2}>
+											{
+												Object.values(
+													item.daysCompleted
+												).filter(Boolean).length
+											}{" "}
+											/ {item.frequency}
+										</Text>
+									</View>
 								</View>
-							</View>
-						)}
-					></FlatList>
+							)}
+						></FlatList>
+					</View>
 				</View>
 			</SafeAreaView>
 		</>
@@ -278,32 +294,49 @@ const styles = StyleSheet.create({
 	},
 	container: {
 		flex: 1,
+		paddingVertical: 15,
 		paddingHorizontal: 20,
+		justifyContent: "space-around",
 	},
 	rankingContainer: {
-		paddingVertical: 5,
-		
+		marginVertical: 10,
+		alignItems: "center",
+	},
+	section: {
+		backgroundColor: Colors.superLightGrey,
+		width: "100%",
+		height: "20%",
+		justifyContent: "space-around",
+		borderRadius: 20,
+		margin: 10,
+	},
+	sectionText: {
+		color: Colors.mediumGrey,
+		fontSize: 18,
+		textAlign: "left",
+		marginLeft: 15,
+		marginTop: 10,
+		fontWeight: "bold",
+	},
+	habitsSection: {
+		backgroundColor: Colors.superLightGrey,
+		width: "100%",
+		height: "70%",
+		justifyContent: "space-around",
+		borderRadius: 20,
+		margin: 10,
 	},
 	rankItem: {
 		flexDirection: "column",
 		gap: 1,
 		alignItems: "center",
 		justifyContent: "center",
-		margin: 5,
-	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingVertical: 16,
-	},
-	headerLeft: {
-		flexDirection: "row",
-		alignItems: "center",
+		marginHorizontal: 2,
 	},
 	headerRight: {
 		flexDirection: "row",
-		alignItems: "center",
+		alignItems: "flex-end",
+		margin: 10,
 	},
 	headerActionIcon: {
 		marginRight: 12,
@@ -318,6 +351,12 @@ const styles = StyleSheet.create({
 		width: 28,
 		height: 28,
 	},
+	header: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingVertical: 5,
+	},
 	box: {
 		width: 80,
 		height: 50,
@@ -325,7 +364,6 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		alignContent: "center",
 		justifyContent: "center",
-		marginBottom: 5,
 	},
 	title: {
 		color: Colors.lettersBloompo,
@@ -348,7 +386,6 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		textAlign: "center",
 		fontSize: 12,
-		marginTop: 5,
 		marginRight: 5,
 	},
 	text2: {

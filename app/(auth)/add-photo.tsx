@@ -88,7 +88,7 @@ export default function AddPhotoScreen() {
                         />
                             <TouchableOpacity
                             style={styles.button2}
-                            onPress={() => router.replace("/(tabs)")}
+                            onPress={() => router.replace("/(auth)/login")}
                         >
                             <Text style={styles.buttonText}>Continuar</Text>
                         </TouchableOpacity>
@@ -97,7 +97,7 @@ export default function AddPhotoScreen() {
 					)}
 					<TouchableOpacity
 						style={styles.button1}
-						onPress={() => router.replace("/(tabs)")}
+						onPress={() => router.replace("/(auth)/login")}
 					>
 						<Text style={styles.buttonText}>Omitir</Text>
 					</TouchableOpacity>

@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function HomeScreen() {
+
   const posts = [
     {
       id: '1',
