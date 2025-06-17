@@ -1,8 +1,11 @@
 import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
+
+  const router = useRouter();
 
   const posts = [
     {
@@ -36,67 +39,59 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>Bloompo</Text>
-          <Image
-            source={require('../../assets/icons/bloompo-icon.png')}
-            style={styles.headerIcon}
-            resizeMode="contain"
-          />
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => console.log('Notificaciones')} style={styles.headerActionIcon}>
-            <IconSymbol name="bell" size={26} color="black" />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => console.log('Nueva publicación')}>
-            <IconSymbol name="plus.circle" size={26} color="black" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Feed */}
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.feedContainer}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.postContainer}>
-            <View style={styles.userRow}>
-              <Image source={item.userPhoto} style={styles.avatar} />
-              <Text style={styles.username}>{item.username}</Text>
-            </View>
-
-            <Image source={item.image} style={styles.postImage} resizeMode="cover" />
-
-            <View style={styles.habitSection}>
-              <View style={styles.habitRow}>
-                <Image source={item.habitIcon} style={styles.habitIcon} />
-                <Text style={styles.habitName}>{item.habitName}</Text>
-              </View>
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  onPress={() => console.log('Validado')}
-                  style={[styles.button, styles.buttonLeft]}
-                >
-                  <Text style={styles.buttonText}>Validar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => console.log('Rechazado')}
-                  style={[styles.button, styles.buttonRight]}
-                >
-                  <Text style={styles.buttonText}>Rechazar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>BLOOMPO</Text>
+            <Image
+              source={require('../../assets/icons/bloompo-icon.png')}
+              style={styles.headerIcon}
+              resizeMode="contain"
+            />
           </View>
-        )}
-      />
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => router.push("/invitation/invitations")} style={styles.headerActionIcon}>
+              <IconSymbol name="bell" size={26} color="black" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() =>  router.push("/create-post/camera")}>
+              <IconSymbol name="plus.circle" size={26} color="black" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Feed */}
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.feedContainer}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.postContainer}>
+              <View style={styles.userRow}>
+                <Image source={item.userPhoto} style={styles.avatar} />
+                <Text style={styles.username}>{item.username}</Text>
+              </View>
+
+              <Image source={item.image} style={styles.postImage} resizeMode="cover" />
+
+              <View style={styles.habitSection}>
+                <View style={styles.habitRow}>
+                  <Image source={item.habitIcon} style={styles.habitIcon} />
+                  <Text style={styles.habitName}>{item.habitName}</Text>
+                  <View style={styles.buttonRow}>
+                    <TouchableOpacity onPress={() => console.log('Like')} >
+                      <IconSymbol name="hand.thumbsup" size={26} color="black" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => console.log('Dislike')} >
+                      <IconSymbol name="hand.thumbsdown" size={26} color="black" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+        />
       </View>
     </SafeAreaView>
   );
@@ -123,8 +118,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontStyle: 'italic',
-    fontWeight: 'bold',
+    fontWeight: 'heavy',
+    fontFamily: "Baloo2Bold",
     marginRight: 5,
   },
   headerIcon: {
@@ -181,10 +176,11 @@ const styles = StyleSheet.create({
   habitName: {
     fontSize: 16,
     fontWeight: '500',
+    marginRight: 10
   },
   buttonRow: {
     flexDirection: 'row',
-    marginTop: 5,
+    gap: 8
   },
   button: {
     flex: 1,

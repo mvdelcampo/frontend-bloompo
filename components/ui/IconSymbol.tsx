@@ -23,7 +23,13 @@ const MAPPING = {
   'list.bullet': 'list',
   'pawprint': 'pets',
   'person.fill': 'person',
-  'pencil': 'edit'
+  'pencil': 'edit',
+  'hand.thumbsup': 'thumb-up',
+  'checkmark.circle': 'check',
+  'xmark.circle': 'cancel',
+  'dollarsign.circle.fill': 'attach-money',
+  'storefront': 'store',
+
 } as IconMapping;
 
 /**
