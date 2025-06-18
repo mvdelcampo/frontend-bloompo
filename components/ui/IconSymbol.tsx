@@ -29,6 +29,7 @@ const MAPPING = {
   'xmark.circle': 'cancel',
   'dollarsign.circle.fill': 'attach-money',
   'storefront': 'store',
+  'plus': 'add',
 
 } as IconMapping;
 

@@ -124,7 +124,7 @@ export default function TrackerScreen() {
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
 					{/* Groups */}
-					<View style={styles.section}>
+					<View style={styles.groupsSection}>
 						<View style={styles.header}>
 							<Text style={styles.sectionText}>Grupos</Text>
 							<View style={styles.headerRight}>
@@ -186,7 +186,7 @@ export default function TrackerScreen() {
 					</View>
 
 					{/* Ranking */}
-					<View style={styles.section}>
+					<View style={styles.rankingSection}>
 						<Text style={styles.sectionText}>Ranking</Text>
 						<View style={styles.rankingContainer}>
 							<FlatList
@@ -216,6 +216,15 @@ export default function TrackerScreen() {
 							/>
 						</View>
 					</View>
+
+					{/* Button create habit */}
+					<TouchableOpacity
+						style={styles.button1}
+						onPress={() => router.push("/tracker/create-habit")}
+					>
+						<IconSymbol name="plus" size={24} color="black" />
+						<Text style={styles.buttonText}>Crear hábito</Text>
+					</TouchableOpacity>
 
 					{/* Selected group habits */}
 					<View style={styles.habitsSection}>
@@ -295,17 +304,19 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		paddingVertical: 15,
-		paddingHorizontal: 20,
+		paddingHorizontal: 10,
 		justifyContent: "space-around",
 	},
 	rankingContainer: {
 		marginVertical: 10,
 		alignItems: "center",
+		flex: 1,
+		justifyContent: "space-around",
 	},
-	section: {
+	groupsSection: {
 		backgroundColor: Colors.superLightGrey,
-		width: "100%",
-		height: "20%",
+		width: "95%",
+		height: "19%",
 		justifyContent: "space-around",
 		borderRadius: 20,
 		margin: 10,
@@ -316,27 +327,37 @@ const styles = StyleSheet.create({
 		textAlign: "left",
 		marginLeft: 15,
 		marginTop: 10,
+		marginBottom: 5,
 		fontWeight: "bold",
+	},
+	rankingSection: {
+		backgroundColor: Colors.superLightGrey,
+		width: "95%",
+		height: "22%",
+		justifyContent: "space-around",
+		borderRadius: 20,
+		margin: 10,
 	},
 	habitsSection: {
 		backgroundColor: Colors.superLightGrey,
-		width: "100%",
+		width: "95%",
 		height: "70%",
 		justifyContent: "space-around",
 		borderRadius: 20,
 		margin: 10,
+		paddingHorizontal: 10,
 	},
 	rankItem: {
 		flexDirection: "column",
 		gap: 1,
 		alignItems: "center",
 		justifyContent: "center",
-		marginHorizontal: 2,
+		marginHorizontal: 3,
 	},
 	headerRight: {
 		flexDirection: "row",
 		alignItems: "flex-end",
-		margin: 10,
+		marginHorizontal: 10,
 	},
 	headerActionIcon: {
 		marginRight: 12,
@@ -358,15 +379,20 @@ const styles = StyleSheet.create({
 		paddingVertical: 5,
 	},
 	box: {
+		margin: 5,
 		width: 80,
 		height: 50,
-		marginRight: 10,
 		borderRadius: 8,
 		alignContent: "center",
 		justifyContent: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 5, // sombra para android
 	},
 	title: {
-		color: Colors.lettersBloompo,
+		color: Colors.darkGrey,
 		fontSize: 16,
 		fontWeight: "bold",
 		fontFamily: "Fredoka",
@@ -374,7 +400,7 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 	},
 	rank: {
-		color: Colors.lettersBloompo,
+		color: Colors.darkGrey,
 		fontSize: 16,
 		fontWeight: "bold",
 		fontFamily: "Fredoka",
@@ -389,7 +415,7 @@ const styles = StyleSheet.create({
 		marginRight: 5,
 	},
 	text2: {
-		color: Colors.lettersBloompo,
+		color: Colors.darkGrey,
 		fontSize: 16,
 		fontWeight: "600",
 		fontFamily: "Fredoka",
@@ -405,6 +431,7 @@ const styles = StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 5, // sombra para android
 		marginBottom: 15,
+		margin: 3,
 	},
 	habitTitle: {
 		fontSize: 16,
@@ -441,7 +468,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	dayLabel: {
-		color: Colors.lettersBloompo,
+		color: Colors.darkGrey,
 		fontSize: 16,
 		textAlign: "center",
 		width: 25,
@@ -459,5 +486,28 @@ const styles = StyleSheet.create({
 
 	daysContainer: {
 		alignItems: "center",
+	},
+	button1: {
+		width: '50%',
+		height: '8%',
+		backgroundColor: Colors.bloompoYellow,
+		borderRadius: 20,
+		padding: 5,
+		margin: 5,
+		alignItems: "center",
+		justifyContent: "center",
+		alignSelf: "center",
+		flexDirection: "row", 
+		gap: 10,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 2,
+		elevation: 2, // sombra para android
+	},
+	buttonText: {
+		color: Colors.darkGrey,
+		fontSize: 16,
+		fontWeight: "700",
 	},
 });

@@ -13,15 +13,16 @@ import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
 import { useState } from "react";
 
-const groupsColors = [
-	Colors.strongPeach,
-	Colors.bloompoYellow,
-	Colors.mintGreen,
-	Colors.pinkCoral,
-	Colors.bloompoYellowSaturated,
-	Colors.babyBlue,
-	Colors.strongBlue,
-];
+const icons = {
+	gym: require("@/assets/icons/gymlogo.png"),
+	art: require("@/assets/icons/artlogo.png"),
+	healthy: require("@/assets/icons/healthylogo.png"),
+	meditate: require("@/assets/icons/meditatelogo.png"),
+	reed: require("@/assets/icons/reedlogo.png"),
+	sleep: require("@/assets/icons/sleeplogo.png"),
+	walk: require("@/assets/icons/walklogo.png"),
+	water: require("@/assets/icons/waterlogo.png"),
+};
 
 export default function CreateGroupScreen() {
 	const [email, setEmail] = useState("");
@@ -38,34 +39,36 @@ export default function CreateGroupScreen() {
 		setFriends(friends.filter((f) => f !== email));
 	};
 
-	const handleSaveGroup = () => {
+	const handleSaveHabit = () => {
 		// TODO logica
 		// Si es exitosa:
-		console.log("save group");
+		console.log("save habit");
 		//router.replace('/(tabs)/tracker');
 	};
 
 	return (
 		<SafeAreaView style={styles.safeArea}>
 			<View style={styles.container}>
-				<Text style={styles.title}>Crear grupo</Text>
+				<Text style={styles.title}>Crear hábito</Text>
 				<View style={styles.base}>
 					<Text style={styles.label}>Nombre:</Text>
-					<TextInput style={styles.input} placeholder="Mi grupo" />
-					<Text style={styles.label}>Elige un color:</Text>
+					<TextInput style={styles.input} placeholder="Mi hábito" />
+					<Text style={styles.label}>Elige un ícono:</Text>
 
-					<View style={styles.colorsRow}>
-						{groupsColors.map((color, index) => (
+					<View style={styles.iconsRow}>
+						{Object.entries(icons).map(([key, source]) => (
 							<TouchableOpacity
-								key={index}
-								style={[
-									styles.colorsCircle,
-									{ backgroundColor: color },
-								]}
+								key={key}
+								style={styles.iconCircle}
 								onPress={() => {
-									console.log("Color seleccionado:", color);
+									console.log("Icono seleccionado:", key);
 								}}
-							/>
+							>
+								<Image
+									source={source}
+									style={styles.iconImage}
+								/>
+							</TouchableOpacity>
 						))}
 					</View>
 
@@ -102,7 +105,7 @@ export default function CreateGroupScreen() {
 
 					<TouchableOpacity
 						style={styles.button1}
-						onPress={handleSaveGroup}
+						onPress={handleSaveHabit}
 					>
 						<Text style={styles.buttonText}>Guardar</Text>
 					</TouchableOpacity>
@@ -159,19 +162,24 @@ const styles = StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 5, // sombra para android
 	},
-	colorsRow: {
+	iconsRow: {
 		flexDirection: "row",
-		marginTop: 8,
+		flexWrap: "wrap",
+		justifyContent: "center",
+		gap: 10,
 	},
-	colorsCircle: {
-		width: 30,
-		height: 30,
+	iconCircle: {
+		width: 60,
+		height: 60,
 		borderRadius: 30,
-		marginTop: 4,
-		marginBottom: 4,
-		marginHorizontal: 5,
-		borderColor: Colors.darkGrey,
-		borderWidth: 2,
+		overflow: "hidden",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	iconImage: {
+		width: 40,
+		height: 40,
+		resizeMode: "contain",
 	},
 	input: {
 		padding: 10,

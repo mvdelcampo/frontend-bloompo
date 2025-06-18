@@ -68,24 +68,24 @@ export default function RootLayout() {
   });
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
-  useEffect(() => {
-        const checkToken = async () => {
-            try {
-                const token =await getToken();
-                if (token) {
-                    // Token exists, navigate to the main page
-                    setIsLoggedIn(true);
-                } else {
-                    // No token, login page
-                    setIsLoggedIn(false);
-                }
-            } catch (error) {
-                console.log('Error retrieving token:', error);
-                setIsLoggedIn(false);
-            }
-        };
-        checkToken();
-    }, []);
+  // useEffect(() => {
+  //       const checkToken = async () => {
+  //           try {
+  //               const token =await getToken();
+  //               if (token) {
+  //                   // Token exists, navigate to the main page
+  //                   setIsLoggedIn(true);
+  //               } else {
+  //                   // No token, login page
+  //                   setIsLoggedIn(false);
+  //               }
+  //           } catch (error) {
+  //               console.log('Error retrieving token:', error);
+  //               setIsLoggedIn(false);
+  //           }
+  //       };
+  //       checkToken();
+  //   }, []);
 
   if (!loaded) {
     // Async font loading only occurs in development.

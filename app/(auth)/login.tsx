@@ -24,7 +24,7 @@ export default function LoginScreen() {
 	const handleLogin = async () => {
 		try {
 			const response = await login({ mail, password });
-			if ((response.status = 200)) {
+			if ((response.status == 200)) {
 				console.log("Login exitoso:", response.data.message);
 
 				console.log("token: ", response.data.token);
@@ -34,7 +34,7 @@ export default function LoginScreen() {
 				await storeData(response.data.userId);
 
 				router.replace("/(tabs)"); // Redirige al layout de tabs
-			} else if (response.status = 401) {
+			} else if (response.status == 401) {
 				Alert.alert("Error", response.data.error) // TODO ver mensaje
 			}
 	

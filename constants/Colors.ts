@@ -40,5 +40,5 @@ export const Colors = {
   backgroundBloompo: '#FDF2DA',
   lettersBloompo: '#5F3820',
   wingsBloompo: '#C3E0DE',
-  red: '#FF7F7F'
+  red: '#FF7F7F',
 };

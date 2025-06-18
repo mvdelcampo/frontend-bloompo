@@ -48,7 +48,7 @@ export default function CreateGroupScreen() {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                <Text style={styles.title}>Editar grupo</Text>
+                <Text style={styles.title}>Editar hábito</Text>
                 <View style={styles.base}>
                     <Text style={styles.label}>Nombre:</Text>
                     <TextInput style={styles.input} placeholder="Mi grupo" />

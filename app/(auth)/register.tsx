@@ -24,12 +24,12 @@ export default function RegisterScreen() {
 	const handleRegister = async () => {
 		try {
 			const response = await register({ mail, password, username });
-			if (response.status = 201) {
+			if (response.status == 201) {
 				router.push("/(auth)/add-photo");
 				Alert.alert("Éxito", "Cuenta creada exitosamente.");
-			} else if (response.status = 400) {
+			} else if (response.status == 400) {
 				Alert.alert("Error", response.data.error) // TODO ver si sale bien el mensaje
-			} else if (response.status = 500) {
+			} else if (response.status == 500) {
 				Alert.alert("Error", "Ha ocurrido un error al crear la cuenta. Vuelve a intentarlo");
 			}
 			

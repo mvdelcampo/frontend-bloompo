@@ -1,24 +1,32 @@
 import axios from 'axios';
+import Constants from 'expo-constants';
+const API_URL = Constants?.manifest2?.extra?.apiUrl
+  ?? Constants?.manifest?.extra?.apiUrl
+  ?? Constants?.expoConfig?.extra?.apiUrl;
 
 const API = axios.create({
-  baseURL: 'http://18.218.161.157:3000',
+  baseURL:  API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-export const login = (userData: {
+export const login = async (userData: {
   mail: string;
   password: string;
-}) => API.post('/user/login', userData);
+}) => {
+  return await API.post('/user/login', userData)
+  console.log('userData', userData)
+  console.log('API_URL')
+ };
 
-export const register = (userData: {
+export const register = async (userData: {
   mail: string;
   password: string;
   username: string;
-}) => API.post('/user/create', userData);
+}) => { return await API.post('/user/create', userData) } ;
 
-export const getGrupos = () => API.get('/grupos');
+export const getGrupos = async () => { return await API.get('/grupos') };
 //export const createGrupo = (data: any) => API.post('/grupos', data);
 // etc.
