@@ -78,5 +78,7 @@ export const getUserScore = (userId: string) =>
   API.get(`/user/${userId}/getUserScore`);
 
 export const getUserPets = (userId: string) =>
-  API.get(`/user/${userId}/getUserPets`);
+  API.get(`/user/${userId}/pets`);
 
+export const getUserHabits = (userId: string) =>
+  API.get(`/user/${userId}/habits`);

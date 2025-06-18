@@ -1,18 +1,23 @@
-import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView } from 'react-native';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useRouter } from "expo-router";
+import { useEffect, useState } from 'react';
+import { getFeedPosts } from '@/services/api';
 
 export default function HomeScreen() {
 
   const router = useRouter();
-
-  const posts = [
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [userId, setUserId] = useState<string>('1');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const mockPosts = [
     {
       id: '1',
       username: 'cami_rutina',
       userPhoto: require('../../assets/images/gymhabit.jpg'),
-      image: require('../../assets/images/gymhabit.jpg'),
+      postPhoto: require('../../assets/images/gymhabit.jpg'),
       habitName: 'Gimnasio',
       habitIcon: require('../../assets/icons/gymlogo.png'),
     },
@@ -20,7 +25,7 @@ export default function HomeScreen() {
       id: '2',
       username: 'juan_habits',
       userPhoto: require('../../assets/images/gymhabit.jpg'),
-      image: require('../../assets/images/gymhabit.jpg'),
+      postPhoto: require('../../assets/images/gymhabit.jpg'),
       habitName: 'Gimnasio',
       habitIcon: require('../../assets/icons/gymlogo.png'),
     },
@@ -28,11 +33,66 @@ export default function HomeScreen() {
       id: '3',
       username: 'cami_rutina',
       userPhoto: require('../../assets/images/gymhabit.jpg'),
-      image: require('../../assets/images/gymhabit.jpg'),
+      postPhoto: require('../../assets/images/gymhabit.jpg'),
       habitName: 'Gimnasio',
       habitIcon: require('../../assets/icons/gymlogo.png'),
     },
   ];
+
+  type Post = {
+    id: string;
+    username: string;
+    userPhoto: any;
+    postPhoto: string;
+    habitName: string;
+    habitIcon: any;
+    postDate?: string;
+    likes?: string[];
+    dislikes?: string[];
+    userLike?: boolean;
+    userDislike?: boolean;
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        /* const response = await getFeedPosts(userId);
+         const data = response.data;
+ 
+         const mapped = data.map((post: any, index: number) => ({
+           id: `${post.username}-${post.postDate}-${index}`,
+           ...post,
+         }));
+         
+         setPosts(mapped);*/
+
+        setPosts(mockPosts);
+      } catch (e) {
+        //console.error(e);
+        //setError('Error al obtener los posts');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.centered}>
+        <Text>{error}</Text>
+      </SafeAreaView>
+    );
+  }
 
   const { top } = useSafeAreaInsets();
 
@@ -54,7 +114,7 @@ export default function HomeScreen() {
               <IconSymbol name="bell" size={26} color="black" />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() =>  router.push("/create-post/camera")}>
+            <TouchableOpacity onPress={() => router.push("/create-post/camera")}>
               <IconSymbol name="plus.circle" size={26} color="black" />
             </TouchableOpacity>
           </View>
@@ -73,7 +133,7 @@ export default function HomeScreen() {
                 <Text style={styles.username}>{item.username}</Text>
               </View>
 
-              <Image source={item.image} style={styles.postImage} resizeMode="cover" />
+              <Image source={typeof item.postPhoto === 'string' ? { uri: item.postPhoto } : item.postPhoto} style={styles.postImage} resizeMode="cover" />
 
               <View style={styles.habitSection}>
                 <View style={styles.habitRow}>
@@ -106,6 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

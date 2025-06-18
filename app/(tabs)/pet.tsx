@@ -1,13 +1,73 @@
-import {ImageBackground, View, Text, Image, FlatList, Dimensions, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import {ImageBackground, View, Text, Image, FlatList, Dimensions, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Colors } from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-
+import { getUserPets, getUserScore } from '@/services/api';
 
 export default function PetScreen() {
-  const petsData = [
+   const userId = '1'; //
+
+   const [petsData, setPetsData] = useState<any[]>([]);
+  const [coins, setCoins] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentHealth, setCurrentHealth] = useState<number>(0);
+
+  type Pet = {
+    id: string;
+    name: string;
+    group: string;
+    image: any;
+    health: number;
+  };
+
+  const screenWidth = Dimensions.get('window').width;
+
+  const flatListRef = useRef<FlatList>(null);
+
+  const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
+  const onViewRef = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      const visibleItem = viewableItems[0].item as Pet;
+      const index = petsData.findIndex(p => p.id === visibleItem.id);
+      setCurrentHealth(visibleItem.health);
+      setCurrentIndex(index);
+    }
+  });
+
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+      /*  const [petsResponse, scoreResponse] = await Promise.all([
+          getUserPets(userId),
+          getUserScore(userId),
+        ]);
+
+        const pets = petsResponse.data;
+        const score = scoreResponse.data;
+
+        setPetsData(pets);
+        setCoins(score.score || 0); 
+
+        if (pets.length > 0) {
+          setCurrentHealth(pets[0].health);
+        }*/
+        setPetsData(mockPetsData);
+        setCoins(mockCoins || 0); 
+        setCurrentHealth(mockPetsData[0].health);
+      } catch (error) {
+        console.error('Error al obtener mascotas o monedas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const mockPetsData = [
     {
       id: '1',
       name: 'Bloompi',
@@ -24,30 +84,7 @@ export default function PetScreen() {
     },
   ];
 
-  type Pet = {
-    id: string;
-    name: string;
-    group: string;
-    image: any;
-    health: number;
-  };
-
-  const screenWidth = Dimensions.get('window').width;
-  const [currentHealth, setCurrentHealth] = useState(petsData[0].health);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const flatListRef = useRef<FlatList>(null);
-
-  const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
-  const onViewRef = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
-      const visibleItem = viewableItems[0].item as Pet;
-      const index = petsData.findIndex(p => p.id === visibleItem.id);
-      setCurrentHealth(visibleItem.health);
-      setCurrentIndex(index);
-    }
-  });
-
+  const mockCoins = 200;
   const scrollToPrev = () => {
     if (currentIndex > 0) {
       flatListRef.current?.scrollToIndex({ index: currentIndex - 1 });
@@ -94,7 +131,7 @@ export default function PetScreen() {
           <View style={styles.rightColumn}>
             <View style={styles.coinDisplay}>
               <IconSymbol name="dollarsign.circle.fill" size={20} color={Colors.bloompoYellowSaturated} />
-              <Text style={styles.coinAmount}>350</Text>
+              <Text style={styles.coinAmount}>{coins}</Text>
             </View>
             <TouchableOpacity style={styles.storeIcon}>
               <IconSymbol name="storefront" size={60} color={'red'} />
