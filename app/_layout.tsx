@@ -31,9 +31,9 @@ export const deleteToken = async () => {
   }
 };
 
-export const storeData = async (username: string) => {
+export const storeData = async (userId: string) => {
   try {
-    await SecureStore.setItemAsync('username', username)
+    await SecureStore.setItemAsync('userId', userId);
   } catch (error) {
     console.error('Error storing token:', error);
   }
@@ -41,17 +41,17 @@ export const storeData = async (username: string) => {
 
 export const getData = async () => {
   try {
-    const username = await SecureStore.getItemAsync('username');
-    return { username: username };
+    const userId = await SecureStore.getItemAsync('userId');
+    return {userId: userId ?? '' };
   } catch (error) {
     console.error('Error getting data:', error);
-    return { username: ''};
+    return {userId: ''};
   }
 };
 
 export const deleteData = async () => {
   try {
-    await SecureStore.deleteItemAsync('username');
+    await SecureStore.deleteItemAsync('userId');
   } catch (error) {
     console.error('Error deleting data:', error);
   }
