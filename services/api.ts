@@ -28,20 +28,6 @@ API.interceptors.request.use(
 );
 */
 
-/*
-// Interceptor para incluir el token JWT
-API.interceptors.request.use(
-  async (config: AxiosRequestConfig) => {
-    const token = await SecureStore.getItemAsync('jwtToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error: AxiosError) => Promise.reject(error)
-);
-*/
-
 export const login = async (userData: {
   mail: string;
   password: string;
