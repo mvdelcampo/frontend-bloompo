@@ -1,6 +1,6 @@
 import axios from 'axios';
-//import * as SecureStore from 'expo-secure-store';
-//import type { AxiosRequestConfig, AxiosError } from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import type { InternalAxiosRequestConfig, AxiosError } from 'axios';
 import Constants from 'expo-constants';
 const API_URL = Constants?.manifest2?.extra?.apiUrl
   ?? Constants?.manifest?.extra?.apiUrl
@@ -14,19 +14,24 @@ const API = axios.create({
   },
 });
 
-/*
-// Interceptor para incluir el token JWT
 API.interceptors.request.use(
-  async (config: AxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     const token = await SecureStore.getItemAsync('jwtToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+
+    // Rutas que NO deben llevar token
+    const excludedRoutes = ['/user/login', '/user/create'];
+
+    const isExcluded = config.url && excludedRoutes.some(route => config.url?.includes(route));
+
+    if (token && !isExcluded) {
+      config.headers.set('Authorization', `Bearer ${token}`);
     }
+
     return config;
   },
   (error: AxiosError) => Promise.reject(error)
 );
-*/
+
 
 export const login = async (userData: {
   mail: string;
@@ -73,11 +78,11 @@ export const deletePost = (data: {
   postDate: string;
 }) => API.delete('/user/deletePost', { data });
 
-export const createPost = (data: {
+export const createPost = async (dataPost: {
   userId: string;
   habitName: string;
   post_photo: string;
-}) => API.post('/user/loadHabitUser', data);
+}) => {return await API.post('/user/loadHabit', dataPost)};
 
 export const getUserData = (userId: string) =>
   API.get(`/user/${userId}`);
@@ -85,8 +90,18 @@ export const getUserData = (userId: string) =>
 export const getUserScore = (userId: string) =>
   API.get(`/user/${userId}/getUserScore`);
 
-export const getUserPets = (userId: string) =>
-  API.get(`/user/${userId}/pets`);
+export const getUserPets = async (userId: string) =>
+  {return await API.get(`/user/${userId}/pets`)};
 
-export const getUserHabits = (userId: string) =>
-  API.get(`/user/${userId}/habits`);
+export const getUserHabits = async (userId: string) =>
+ {return await API.get(`/user/${userId}/habits`)};
+
+export const addLikes = async (dataPost: {
+  userId: string;
+  postOwnerUserId: string;
+  habitName: string;
+  postDate: Date;
+  like: boolean;
+  dislike: boolean;
+}) => {return await API.post('/user/addLikes', dataPost)};
+

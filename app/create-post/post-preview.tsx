@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView } from 'react-native';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView, Alert } from 'react-native';
 import { Colors } from "@/constants/Colors";
+import * as SecureStore from 'expo-secure-store';
+import { getUserHabits, createPost } from '@/services/api';
+import { getHabitIcon } from '@/constants/habitIcons';
 
 
 const dummyHabits = [
@@ -13,13 +16,77 @@ const dummyHabits = [
 export default function PostPreview() {
   const { imageUri } = useLocalSearchParams();
   const router = useRouter();
-  const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
+  const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const handleShare = () => {
+  type Habit = {
+    id: string,
+    name: string,
+    icon: string,
+    color: string
+  };
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const id = await SecureStore.getItemAsync('userId');
+        if (!id) {
+          Alert.alert('Error', 'No se pudo recuperar el usuario.');
+        }
+        setUserId(id);
+      } catch (err) {
+        console.error('Error recuperando userId:', err);
+        Alert.alert('Error', 'Hubo un problema al acceder al usuario.');
+      }
+    };
+    fetchUserId();
+  }, []);
+
+  useEffect(() => {
+    const getHabitsByUser = async () => {
+      if (!userId) return;
+
+      try {
+        const response = await getUserHabits(userId);
+        console.log(response.data.habits);
+        setHabits(response.data.habits);
+      } catch (error) {
+        console.error('Error al obtener hábitos del usuario:', error);
+        Alert.alert('Error', 'No se pudieron cargar los hábitos.');
+      }
+    };
+
+    getHabitsByUser();
+  }, [userId]);
+
+  const handleShare = async () => {
     console.log('Imagen:', imageUri);
-    console.log('Hábito seleccionado:', selectedHabit);
-    // Aquí iría la lógica para guardar el post
-    router.replace('/(tabs)'); // Volver a home o feed
+    console.log('Hábito seleccionado:', selectedHabit?.name);
+    if (!selectedHabit || !imageUri || !userId) {
+      Alert.alert('Error', 'Faltan datos para compartir el post.');
+      return;
+    }
+
+    if (!selectedHabit) {
+      Alert.alert('Error', 'No se encontró el hábito seleccionado.');
+      return;
+    }
+
+    try {
+      await createPost({
+        userId,
+        habitName: selectedHabit.name,
+        post_photo: imageUri as string,
+      });
+
+      Alert.alert('Éxito', 'Post compartido correctamente.');
+      router.replace('/(tabs)');
+    } catch (err) {
+      console.error('Error al compartir el post:', err);
+      Alert.alert('Error', 'No se pudo compartir el post.');
+    }
+    router.replace('/(tabs)'); // Volver a home
   };
 
   return (
@@ -27,19 +94,19 @@ export default function PostPreview() {
       <View style={styles.container}>
         <Text style={styles.title}>Nueva Publicación</Text>
 
-        <Image source={{uri: imageUri as string}} style={styles.image} />
+        <Image source={{ uri: imageUri as string }} style={styles.image} />
 
         <View style={styles.habitList}>
-          {dummyHabits.map((item) => (
+          {habits.map((item) => (
             <TouchableOpacity
               key={item.id}
-              onPress={() => setSelectedHabit(item.id)}
+              onPress={() => setSelectedHabit(item)}
               style={[
                 styles.habitButton,
-                selectedHabit === item.id && styles.habitButtonSelected,
+                selectedHabit === item && styles.habitButtonSelected,
               ]}
             >
-              <Image source={item.icon} style={styles.habitIcon} />
+              <Image source={getHabitIcon(item.icon)} style={styles.habitIcon} />
               <Text style={styles.habitText}>
                 {item.name.length > 20 ? item.name.slice(0, 17) + '…' : item.name}
               </Text>
