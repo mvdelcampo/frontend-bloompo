@@ -12,8 +12,9 @@ import {
 import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
 import { useState } from "react";
+import { Stack } from "expo-router";
 
-const icons = {
+const icons = { // TODO usar lo de Vale
 	gym: require("@/assets/icons/gymlogo.png"),
 	art: require("@/assets/icons/artlogo.png"),
 	healthy: require("@/assets/icons/healthylogo.png"),
@@ -47,6 +48,8 @@ export default function CreateGroupScreen() {
 	};
 
 	return (
+		<>
+		<Stack.Screen options={{ title: 'Crear hábito', headerShown: true, headerTintColor: 'black', headerBackTitle: 'Atrás', }} />
 		<SafeAreaView style={styles.safeArea}>
 			<View style={styles.container}>
 				<Text style={styles.title}>Crear hábito</Text>
@@ -111,7 +114,8 @@ export default function CreateGroupScreen() {
 					</TouchableOpacity>
 				</View>
 			</View>
-		</SafeAreaView>
+			</SafeAreaView>
+			</>
 	);
 }
 

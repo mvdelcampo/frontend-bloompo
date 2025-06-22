@@ -8,10 +8,13 @@ import {
 	ScrollView,
 	TouchableOpacity,
 	FlatList,
+	Alert,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createGroup, sendInvitation } from "../../services/api";
+import { Stack, useRouter } from "expo-router";
 
 const groupsColors = [
 	Colors.strongPeach,
@@ -24,8 +27,12 @@ const groupsColors = [
 ];
 
 export default function CreateGroupScreen() {
+	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [friends, setFriends] = useState<string[]>([]);
+	const [groupName, setGroupName] = useState("");
+	const [petName, setPetName] = useState("");
+	const [selectedColor, setSelectedColor] = useState("");
 
 	const addFriend = () => {
 		if (email.trim() !== "" && !friends.includes(email.trim())) {
@@ -38,20 +45,68 @@ export default function CreateGroupScreen() {
 		setFriends(friends.filter((f) => f !== email));
 	};
 
-	const handleSaveGroup = () => {
-		// TODO logica
-		// Si es exitosa:
-		console.log("save group");
-		//router.replace('/(tabs)/tracker');
+	const handleSaveGroup = async () => {
+		if (!groupName || !petName || !selectedColor) {
+			Alert.alert(
+				"Error",
+				"Tenés que completar todos los campos para Guardar"
+			);
+			return;
+		}
+
+		try {
+			const groupData = {
+				name: groupName,
+				color: selectedColor,
+				pet_name: petName,
+			};
+
+			const response = await createGroup(groupData);
+			if (response.status == 201) {
+				console.log("Grupo creado:", response.data);
+				
+				const groupIdCreated = response.data._id;
+
+				for (let i = 0; i < friends.length; i++) {
+					try {
+						await sendInvitation({
+							friendEmail: friends[i],
+							groupId: groupIdCreated,
+						});
+					} catch (invitationError) {
+						console.error(
+							`Error al invitar a ${friends[i]}:`,
+							invitationError
+						);
+					}
+				}
+				Alert.alert("Éxito", "¡Grupo creado exitosamente!");
+				router.replace("/(tabs)/tracker");
+			} else {
+				Alert.alert(
+					"Error",
+					"Ocurrió un error al crear el grupo. Vuelve a intentarlo."
+				);
+			}
+		} catch (error) {
+			console.error("Error al crear grupo:", error);
+		}
 	};
 
 	return (
+		<>
+		<Stack.Screen options={{ title: 'Crear grupo', headerShown: true, headerTintColor: 'black', headerBackTitle: 'Atrás', }} />
 		<SafeAreaView style={styles.safeArea}>
 			<View style={styles.container}>
 				<Text style={styles.title}>Crear grupo</Text>
 				<View style={styles.base}>
 					<Text style={styles.label}>Nombre:</Text>
-					<TextInput style={styles.input} placeholder="Mi grupo" />
+					<TextInput
+						style={styles.input}
+						placeholder="Mi grupo"
+						value={groupName}
+						onChangeText={setGroupName}
+					/>
 					<Text style={styles.label}>Elige un color:</Text>
 
 					<View style={styles.colorsRow}>
@@ -61,9 +116,11 @@ export default function CreateGroupScreen() {
 								style={[
 									styles.colorsCircle,
 									{ backgroundColor: color },
+									color === selectedColor &&
+										styles.selectedColorCircle,
 								]}
 								onPress={() => {
-									console.log("Color seleccionado:", color);
+									setSelectedColor(color);
 								}}
 							/>
 						))}
@@ -100,15 +157,27 @@ export default function CreateGroupScreen() {
 						</View>
 					</View>
 
+					<Text style={styles.label}>
+						Nombre de la mascota grupal:
+					</Text>
+					<TextInput
+						style={styles.input}
+						placeholder="Milo"
+						value={petName}
+						onChangeText={setPetName}
+					/>
+
 					<TouchableOpacity
 						style={styles.button1}
 						onPress={handleSaveGroup}
 					>
-						<Text style={styles.buttonText}>Guardar</Text>
+						<Text style={styles.buttonText}>Crear</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
-		</SafeAreaView>
+			</SafeAreaView>
+			
+		</>
 	);
 }
 
@@ -296,5 +365,9 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		fontSize: 26,
 		alignSelf: "center",
+	},
+	selectedColorCircle: {
+		borderWidth: 4,
+		borderColor: Colors.darkGrey,
 	},
 });

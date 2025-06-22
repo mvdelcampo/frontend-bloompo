@@ -8,7 +8,8 @@ import {
 	Text,
 	Button,
 	TouchableOpacity,
-	Alert
+	Alert,
+	KeyboardAvoidingView,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
@@ -28,72 +29,83 @@ export default function RegisterScreen() {
 				router.push("/(auth)/add-photo");
 				Alert.alert("Éxito", "Cuenta creada exitosamente.");
 			} else if (response.status == 400) {
-				Alert.alert("Error", response.data.error) // TODO ver si sale bien el mensaje
+				Alert.alert("Error", response.data.error); // TODO ver si sale bien el mensaje
 			} else if (response.status == 500) {
-				Alert.alert("Error", "Ha ocurrido un error al crear la cuenta. Vuelve a intentarlo");
+				Alert.alert(
+					"Error",
+					"Ha ocurrido un error al crear la cuenta. Vuelve a intentarlo"
+				);
 			}
-			
 		} catch (error) {
 			console.error("Error al registrar:", error);
 		}
 	};
 
 	return (
-		<SafeAreaView style={styles.safeArea}>
-			<View style={styles.container}>
-				<View style={styles.header}>
-					<Text style={styles.appName}>BLOOMPO</Text>
-					<Image
-						source={require("../../assets/icons/bloompo-icon.png")}
-						style={styles.headerIcon}
-						resizeMode="contain"
-					/>
-				</View>
+		<KeyboardAvoidingView
+			style={{ flex: 1 }}
+			behavior={Platform.OS === "ios" ? "padding" : "height"}
+			keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+		>
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
+					<View style={styles.header}>
+						<Text style={styles.appName}>BLOOMPO</Text>
+						<Image
+							source={require("../../assets/icons/bloompo-icon.png")}
+							style={styles.headerIcon}
+							resizeMode="contain"
+						/>
+					</View>
 
-				<Text style={styles.title}>
-					Crea hábitos. Cuida a tu mascota. Conéctate con amigos.
-				</Text>
-				<Text style={styles.subtitle}>
-					Empieza tu viaje de crecimiento personal y grupal creando
-					pequeños desafíos. Sube pruebas, gana monedas, recibe apoyo
-					de tu grupo y ve cómo tu mascota virtual florece contigo.
-				</Text>
-				<View style={styles.base}>
-					<Text style={styles.label}>Nombre de usuario</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="mperez"
-						value={username}
-						onChangeText={setUsername}
-					/>
-					<Text style={styles.label}>Correo electrónico</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="hello@example"
-						value={mail}
-						onChangeText={setMail}
-					/>
-					<Text style={styles.label}>Contraseña</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="***************"
-						value={password}
-						onChangeText={setPassword}
-					/>
-					<Text style={styles.label}>Repita su contraseña</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="***************"
-					/>
-					<TouchableOpacity
-						style={styles.button1}
-						onPress={handleRegister}
-					>
-						<Text style={styles.buttonText}>Crear cuenta</Text>
-					</TouchableOpacity>
+					<Text style={styles.title}>
+						Crea hábitos. Cuida a tu mascota. Conéctate con amigos.
+					</Text>
+					<Text style={styles.subtitle}>
+						Empieza tu viaje de crecimiento personal y grupal
+						creando pequeños desafíos. Sube pruebas, gana monedas,
+						recibe apoyo de tu grupo y ve cómo tu mascota virtual
+						florece contigo.
+					</Text>
+					<View style={styles.base}>
+						<Text style={styles.label}>Nombre de usuario</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="mperez"
+							value={username}
+							onChangeText={setUsername}
+						/>
+						<Text style={styles.label}>Correo electrónico</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="hello@example"
+							value={mail}
+							onChangeText={setMail}
+						/>
+						<Text style={styles.label}>Contraseña</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="***************"
+							value={password}
+							onChangeText={setPassword}
+							secureTextEntry={true}
+						/>
+						<Text style={styles.label}>Repita su contraseña</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="***************"
+							secureTextEntry={true}
+						/>
+						<TouchableOpacity
+							style={styles.button1}
+							onPress={handleRegister}
+						>
+							<Text style={styles.buttonText}>Crear cuenta</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
-			</View>
-		</SafeAreaView>
+			</SafeAreaView>
+		</KeyboardAvoidingView>
 	);
 }
 

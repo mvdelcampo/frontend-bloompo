@@ -9,6 +9,12 @@ import {
 	TouchableOpacity,
 	FlatList,
 } from "react-native";
+import { useEffect, useState } from "react";
+import {
+	getUserGroups,
+	getGroupRanking,
+	getHabitsFromGroup,
+} from "../../services/api";
 
 import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
@@ -19,105 +25,172 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 
-const groupsColors = [
-	Colors.strongPeach,
-	Colors.bloompoYellow,
-	Colors.mintGreen,
-	Colors.pinkCoral,
-	Colors.bloompoYellowSaturated,
-	Colors.babyBlue,
-	Colors.strongBlue,
-	Colors.strongPeach,
-];
-const groupsNames = [
-	"Telematicos",
-	"GYMbros",
-	"Panas",
-	"Grupo 4",
-	"Grupo 5",
-	"Grupo 6",
-	"Grupo 7",
-];
-const habits = [
-	{
-		name: "Hábito 1",
-		frequency: 5,
-		daysCompleted: {
-			L: false,
-			M: true,
-			X: false,
-			J: true,
-			V: false,
-			S: false,
-			D: false,
-		},
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-	{
-		name: "Hábito 2",
-		frequency: 3,
-		daysCompleted: {
-			L: true,
-			M: false,
-			X: true,
-			J: false,
-			V: true,
-			S: false,
-			D: false,
-		},
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-	{
-		name: "Hábito 3",
-		frequency: 7,
-		daysCompleted: {
-			L: true,
-			M: true,
-			X: true,
-			J: true,
-			V: true,
-			S: false,
-			D: false,
-		},
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-];
+type Group = {
+	id: string;
+	name: string;
+	color: string;
+};
 
-const ranking = [
-	{
-		name: "Usuario1",
-		score: 100,
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-	{
-		name: "Usuario2",
-		score: 90,
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-	{
-		name: "Usuario3",
-		score: 80,
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-	{
-		name: "Usuario4",
-		score: 70,
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-	{
-		name: "Usuario5",
-		score: 60,
-		userPhoto: require("../../assets/images/gymhabit.jpg"),
-	},
-];
+type RankingItem = {
+	username: string;
+	photo: string;
+	score: number;
+};
+
+type Habit = {
+	name: string;
+	icon: string;
+	frequency: number;
+	weekly_counter: number[];
+	username: string;
+	photo: string;
+};
+const daysLabels = ["L", "M", "X", "J", "V", "S", "D"];
+
+// const groupsColors = [
+// 	Colors.strongPeach,
+// 	Colors.bloompoYellow,
+// 	Colors.mintGreen,
+// 	Colors.pinkCoral,
+// 	Colors.bloompoYellowSaturated,
+// 	Colors.babyBlue,
+// 	Colors.strongBlue,
+// 	Colors.strongPeach,
+// ];
+// const groupsNames = [
+// 	"Telematicos",
+// 	"GYMbros",
+// 	"Panas",
+// 	"Grupo 4",
+// 	"Grupo 5",
+// 	"Grupo 6",
+// 	"Grupo 7",
+// ];
+// const habits = [
+// 	{
+// 		name: "Hábito 1",
+// 		frequency: 5,
+// 		daysCompleted: {
+// 			L: false,
+// 			M: true,
+// 			X: false,
+// 			J: true,
+// 			V: false,
+// 			S: false,
+// 			D: false,
+// 		},
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// 	{
+// 		name: "Hábito 2",
+// 		frequency: 3,
+// 		daysCompleted: {
+// 			L: true,
+// 			M: false,
+// 			X: true,
+// 			J: false,
+// 			V: true,
+// 			S: false,
+// 			D: false,
+// 		},
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// 	{
+// 		name: "Hábito 3",
+// 		frequency: 7,
+// 		daysCompleted: {
+// 			L: true,
+// 			M: true,
+// 			X: true,
+// 			J: true,
+// 			V: true,
+// 			S: false,
+// 			D: false,
+// 		},
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// ];
+
+// const ranking = [
+// 	{
+// 		name: "Usuario1",
+// 		score: 100,
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// 	{
+// 		name: "Usuario2",
+// 		score: 90,
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// 	{
+// 		name: "Usuario3",
+// 		score: 80,
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// 	{
+// 		name: "Usuario4",
+// 		score: 70,
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// 	{
+// 		name: "Usuario5",
+// 		score: 60,
+// 		userPhoto: require("../../assets/images/gymhabit.jpg"),
+// 	},
+// ];
 
 export default function TrackerScreen() {
 	const router = useRouter();
+	const [selectedGroupId, setSelectedGroupId] = useState("");
+	const [groups, setGroups] = useState<Group[]>([]);
+	const [ranking, setRanking] = useState<RankingItem[]>([]);
+	const [habits, setHabits] = useState<Habit[]>([]);
 
-	const handlePressGroup = (group: string) => {
-		console.log(`Grupo seleccionado: ${group}`);
-		// TODO cambiar de grupo y actualizar lo que se muestra
+	const handlePressGroup = (groupId: string) => {
+		console.log(`Grupo seleccionado: ${groupId}`);
+		setSelectedGroupId(groupId);
 	};
+
+	useEffect(() => {
+		const fetchData = async () => {
+			
+			try {
+				const responseGroups = await getUserGroups();
+				setGroups(responseGroups.data);
+				
+			} catch (error) {
+				console.error("Error al cargar grupos:", error);
+			}
+
+			try {
+				const responseRanking = await getGroupRanking(selectedGroupId);
+				setRanking(responseRanking.data.slice(0, 5));
+			} catch (error) {
+				console.error("Error al cargar ranking:", error);
+			}
+
+			try {
+				const responseHabits = await getHabitsFromGroup(
+					selectedGroupId
+				);
+				const flatHabits = responseHabits.data.habits.map(
+					(habit: any) => ({
+						name: habit.name, // name, icon, frequency, weekly_counter
+						icon: habit.icon,
+						frequency: habit.frequency,
+						weekly_counter: habit.weekly_counter,
+						username: responseHabits.data.username,
+						photo: responseHabits.data.photo,
+					})
+				);
+
+				setHabits(flatHabits);
+			} catch (error) {
+				console.error("Error al cargar habitos:", error);
+			}
+		};
+		fetchData();
+	}, []);
 
 	return (
 		<>
@@ -131,7 +204,7 @@ export default function TrackerScreen() {
 								<TouchableOpacity
 									style={styles.headerActionIcon}
 									onPress={() =>
-										router.push("/tracker/edit-group")
+										router.push({ pathname: "/tracker/edit-group", params: { groupId: selectedGroupId } })
 									}
 								>
 									<IconSymbol
@@ -160,25 +233,23 @@ export default function TrackerScreen() {
 							showsHorizontalScrollIndicator={false}
 							style={{ maxHeight: 100, marginHorizontal: 10 }}
 						>
-							{groupsNames.map((name, index) => (
+							{groups.map((item, index) => (
 								<TouchableOpacity
 									key={index}
-									onPress={() => handlePressGroup(name)}
+									onPress={() =>
+										handlePressGroup(item.id)
+									}
 								>
 									<View
 										key={index}
 										style={[
 											styles.box,
 											{
-												backgroundColor:
-													groupsColors[
-														index %
-															groupsColors.length
-													],
+												backgroundColor: item.color
 											},
 										]}
 									>
-										<Text style={styles.text}>{name}</Text>
+										<Text style={styles.text}>{item.name}</Text>
 									</View>
 								</TouchableOpacity>
 							))}
@@ -201,11 +272,11 @@ export default function TrackerScreen() {
 												#{index + 1}
 											</Text>
 											<Image
-												source={item.userPhoto}
+												source={item.photo}
 												style={styles.avatar}
 											/>
 											<Text style={styles.text}>
-												{item.name}
+												{item.username}
 											</Text>
 											<Text style={styles.text}>
 												{item.score} pts
@@ -236,7 +307,7 @@ export default function TrackerScreen() {
 								<View style={styles.card}>
 									<View style={styles.habitHeader}>
 										<Image
-											source={item.userPhoto}
+											source={item.photo}
 											style={styles.avatar}
 										/>
 										<Text style={styles.habitTitle}>
@@ -246,42 +317,47 @@ export default function TrackerScreen() {
 									<View style={styles.habitCompletion}>
 										<View style={styles.daysContainer}>
 											<View style={styles.daysRow}>
-												{Object.keys(
-													item.daysCompleted
-												).map((day) => (
-													<Text
-														key={day}
-														style={styles.dayLabel}
-													>
-														{day}
-													</Text>
-												))}
-											</View>
-											<View style={styles.daysRow}>
-												{Object.values(
-													item.daysCompleted
-												).map((completed, index) => (
-													<View
-														key={index}
-														style={[
-															styles.dayCircle,
-															{
-																backgroundColor:
-																	completed
-																		? Colors.strongPeach
-																		: Colors.lightGrey,
-															},
-														]}
-													/>
-												))}
+												{daysLabels.map(
+													(day, index) => (
+														<View
+															key={day}
+															style={{
+																alignItems:
+																	"center",
+																marginHorizontal: 4,
+															}}
+														>
+															<Text
+																style={
+																	styles.dayLabel
+																}
+															>
+																{day}
+															</Text>
+															<View
+																style={[
+																	styles.dayCircle,
+																	{
+																		backgroundColor:
+																			item
+																				.weekly_counter[
+																				index
+																			] ===
+																			1
+																				? Colors.strongPeach
+																				: Colors.lightGrey,
+																	},
+																]}
+															/>
+														</View>
+													)
+												)}
 											</View>
 										</View>
 
 										<Text style={styles.text2}>
 											{
-												Object.values(
-													item.daysCompleted
-												).filter(Boolean).length
+												item.weekly_counter.filter(d => d === 1).length
 											}{" "}
 											/ {item.frequency}
 										</Text>
@@ -488,8 +564,8 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	button1: {
-		width: '50%',
-		height: '8%',
+		width: "50%",
+		height: "8%",
 		backgroundColor: Colors.bloompoYellow,
 		borderRadius: 20,
 		padding: 5,
@@ -497,7 +573,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		alignSelf: "center",
-		flexDirection: "row", 
+		flexDirection: "row",
 		gap: 10,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },

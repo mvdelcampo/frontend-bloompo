@@ -33,19 +33,75 @@ export const login = async (userData: {
   password: string;
 }) => {
   return await API.post('/user/login', userData)
-  console.log('userData', userData)
-  console.log('API_URL')
+  // console.log('userData', userData)
+  // console.log('API_URL')
  };
 
 export const register = async (userData: {
   mail: string;
   password: string;
   username: string;
-}) => { return await API.post('/user/create', userData) } ;
+}) => { return await API.post('/user/create', userData) };
 
-export const getGrupos = async () => { return await API.get('/grupos') };
-//export const createGrupo = (data: any) => API.post('/grupos', data);
-// etc.
+
+
+export const createGroup = async (data: {
+	name: string;
+	color: string;
+	pet_name: string;
+}) => {
+	return await API.post("/group/create", data);
+};
+
+export const getGroup = async (groupId: string) => {
+	return await API.post(`/group/${groupId}`);
+};
+
+export const editGroup = async (data: {
+	_id: string;
+	name: string;
+	color: string;
+	pet_name: string;
+}) => {
+	return await API.put("/group/edit", data);
+};
+
+export const createHabit = async (data: {
+	habit: {
+		name: string;
+		icon: string;
+		color: string;
+		frequency: string;
+	};
+}) => {
+	return await API.post("/user/createHabit", data);
+};
+
+export const sendInvitation = async (data: {
+	friendEmail: string;
+	groupId: string;
+}) => {
+	return await API.post("/user/addPendingGroup", data);
+};
+
+export const deleteFriend = async (data: {
+	friendEmail: string;
+	groupId: string;
+}) => {
+	return await API.post("/user/deleteFriendFromGroup", data);
+};
+
+export const getUserGroups = async () => {
+	return await API.get(`/user/me/groups`);
+};
+
+export const getGroupRanking = async (groupId: string) => {
+	return await API.get(`/group/${groupId}/getGroupRanking`);
+};
+
+export const getHabitsFromGroup = async (groupId: string) => {
+	return await API.get(`/group/${groupId}/getHabits`);
+};
 
 export const getFeedPosts = (userId: string) => API.get(`/user/${userId}/getFeedPosts`);
 
