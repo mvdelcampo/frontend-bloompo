@@ -3,13 +3,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { getUserPendingGroups, respondToGroupInvitation } from '@/services/api';
+import { getUserInvitations, acceptInvitation } from '@/services/api';
 
 
 export default function InvitationScreen() {
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [userId, setUserId] = useState<string>('1');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,38 +19,23 @@ export default function InvitationScreen() {
     userPhoto: string;
   };
 
-  const mockInvitations = [
-    {
-      id: '1',
-      username: 'cami_rutina',
-      userPhoto: require('../../assets/images/gymhabit.jpg'),
-      groupName: 'Corredores 2025'
-    },
-    {
-      id: '2',
-      username: 'juancho',
-      userPhoto: require('../../assets/images/gymhabit.jpg'),
-      groupName: 'Lectura Grupo Martes'
-    },
-  ];
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-       /* const response = await getUserPendingGroups(userId);
-        const data = response.data;
-
+        const response = await getUserInvitations();
+        const data = response.data.id_pending_groups;
+        console.log(data)
         const mapped = data.map((invitation: any, index: number) => ({
-          id: `${invitation.username}-${invitation.groupName}-${index}`,
-          ...invitation,
+          id: invitation._id,
+          username: 'Juan',
+          groupName: invitation.name,
+          userPhoto: ''
         }));
 
-        setInvitations(mapped);*/
-
-        setInvitations(mockInvitations);
+        setInvitations(mapped);
       } catch (e) {
-       // console.error(e);
-        //setError('Error al obtener los posts');
+        console.error(e);
+        setError('Error al obtener invitaciones');
       } finally {
         setLoading(false);
       }
@@ -61,21 +45,18 @@ export default function InvitationScreen() {
   }, []);
 
   const handleInvitationResponse = async (groupId: string, accepted: boolean) => {
-  try {
-   /* await respondToGroupInvitation({
-      userId,
-      groupId,
-      accepted,
-    });*/
-    console.log('Invitation responded');
-
-    // Filtramos la invitación respondida para ocultarla del listado
-    setInvitations((prev) => prev.filter((inv) => inv.id !== groupId));
-  } catch (err) {
-    console.error('Error al responder invitación:', err);
-    // Podés mostrar un mensaje de error si querés
-  }
-};
+    try {
+       await acceptInvitation({
+         groupId,
+         accepted,
+       });
+      console.log('Invitation responded');
+      // Filtramos la invitación respondida para ocultarla del listado
+      setInvitations((prev) => prev.filter((inv) => inv.id !== groupId));
+    } catch (err) {
+      console.error('Error al responder invitación:', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -114,10 +95,10 @@ export default function InvitationScreen() {
 
                 <View style={styles.iconContainer}>
                   <TouchableOpacity onPress={() => handleInvitationResponse(item.id, true)}>
-                    <IconSymbol name="checkmark.circle" size={28} color="red" />
+                    <IconSymbol name="checkmark.circle" size={28} color="green" />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => handleInvitationResponse(item.id, false)}>
-                    <IconSymbol name="xmark.circle" size={28} color="green" />
+                    <IconSymbol name="xmark.circle" size={28} color="red" />
                   </TouchableOpacity>
                 </View>
               </View>

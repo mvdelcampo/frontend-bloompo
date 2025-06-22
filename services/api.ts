@@ -1,6 +1,6 @@
 import axios from 'axios';
-//import * as SecureStore from 'expo-secure-store';
-//import type { AxiosRequestConfig, AxiosError } from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import type { InternalAxiosRequestConfig, AxiosError } from 'axios';
 import Constants from 'expo-constants';
 const API_URL = Constants?.manifest2?.extra?.apiUrl
   ?? Constants?.manifest?.extra?.apiUrl
@@ -14,19 +14,24 @@ const API = axios.create({
   },
 });
 
-/*
-// Interceptor para incluir el token JWT
 API.interceptors.request.use(
-  async (config: AxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     const token = await SecureStore.getItemAsync('jwtToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+
+    // Rutas que NO deben llevar token
+    const excludedRoutes = ['/user/login', '/user/create'];
+
+    const isExcluded = config.url && excludedRoutes.some(route => config.url?.includes(route));
+
+    if (token && !isExcluded) {
+      config.headers.set('Authorization', `Bearer ${token}`);
     }
+
     return config;
   },
   (error: AxiosError) => Promise.reject(error)
 );
-*/
+
 
 export const login = async (userData: {
   mail: string;
@@ -103,46 +108,70 @@ export const getHabitsFromGroup = async (groupId: string) => {
 	return await API.get(`/group/${groupId}/getHabits`);
 };
 
-export const getFeedPosts = (userId: string) => API.get(`/user/${userId}/getFeedPosts`);
+// ---------- Pantalla Home ----------------------
 
-export const getUserPendingGroups = (userId: string) =>
-  API.get(`/user/${userId}/getUserPendingGroups`);
+// Obtener posts para el feed
+export const getFeedPosts = async () => 
+  {return await API.get(`/user/me/getFeedPosts`)};
 
-export const respondToGroupInvitation = (data: {
-  userId: string;
-  groupId: string;
-  accepted: boolean;
-}) => API.post('/user/acceptPendingGroup', data);
+// Borrar foto
+export const deletePost = async (data: {
+  habitName: string;
+  postDate: string;
+}) => 
+  {return await API.delete('/user/deletePost', { data })};
 
-export const updatePostReactions = (data: {
-  userId: string;
+// Dar me gusta/no me gusta a foto
+export const addLikes = async (dataPost: {
   postOwnerUserId: string;
   habitName: string;
-  postDate: string;
+  postDate: Date;
   like: boolean;
   dislike: boolean;
-}) => API.post('/user/addLikes', data);
+}) => {return await API.post('/user/addLikes', dataPost)};
 
-export const deletePost = (data: {
-  userId: string;
-  habitName: string;
-  postDate: string;
-}) => API.delete('/user/deletePost', { data });
+// Obtener invitaciones pendientes
+export const getUserInvitations = async () =>
+  {return await API.get(`/user/me/pendingGroups`)};
 
-export const createPost = (data: {
-  userId: string;
-  habitName: string;
-  post_photo: string;
-}) => API.post('/user/loadHabitUser', data);
+// Aceptar/Rechazar invitacion pendiente
+export const acceptInvitation = async (data: {
+  groupId: string;
+  accepted: boolean;
+}) => 
+  {return await API.post('/user/acceptPendingGroup', data)};
 
-export const getUserData = (userId: string) =>
-  API.get(`/user/${userId}`);
+// Crear post
+export const createPost = async (formData: FormData) => {
+  return await API.post('/user/loadHabit', formData, {
+    timeout: 40000,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
 
-export const getUserScore = (userId: string) =>
-  API.get(`/user/${userId}/getUserScore`);
+// Obtener habitos del usuario
+export const getUserHabits = async () =>
+ {return await API.get(`/user/me/habits`)};
 
-export const getUserPets = (userId: string) =>
-  API.get(`/user/${userId}/pets`);
+// ---------- Pantalla Mascota ----------------------
 
-export const getUserHabits = (userId: string) =>
-  API.get(`/user/${userId}/habits`);
+// Obtener mascotas de todos los grupos a los que pertenece un usuario
+export const getUserPets = async () =>
+  {return await API.get(`/user/me/pets`)};
+
+// Obtener puntos (o monedas) del usuario
+export const getUserScore = async () =>
+  {return await API.get(`/user/me/getUserScore`)};
+
+// ------------ Pantalla Usuario --------------------
+
+export const getUserData = async () =>
+  {return await API.get(`/user/me`)};
+
+
+
+
+
+

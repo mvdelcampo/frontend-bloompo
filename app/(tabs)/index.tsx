@@ -1,75 +1,51 @@
-import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from 'react';
 import { getFeedPosts } from '@/services/api';
+import * as SecureStore from 'expo-secure-store';
+import { getHabitIcon } from '@/constants/habitIcons';
+
 
 export default function HomeScreen() {
 
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [userId, setUserId] = useState<string>('1');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const mockPosts = [
-    {
-      id: '1',
-      username: 'cami_rutina',
-      userPhoto: require('../../assets/images/gymhabit.jpg'),
-      postPhoto: require('../../assets/images/gymhabit.jpg'),
-      habitName: 'Gimnasio',
-      habitIcon: require('../../assets/icons/gymlogo.png'),
-    },
-    {
-      id: '2',
-      username: 'juan_habits',
-      userPhoto: require('../../assets/images/gymhabit.jpg'),
-      postPhoto: require('../../assets/images/gymhabit.jpg'),
-      habitName: 'Gimnasio',
-      habitIcon: require('../../assets/icons/gymlogo.png'),
-    },
-    {
-      id: '3',
-      username: 'cami_rutina',
-      userPhoto: require('../../assets/images/gymhabit.jpg'),
-      postPhoto: require('../../assets/images/gymhabit.jpg'),
-      habitName: 'Gimnasio',
-      habitIcon: require('../../assets/icons/gymlogo.png'),
-    },
-  ];
 
   type Post = {
     id: string;
     username: string;
     userPhoto: any;
-    postPhoto: string;
+    postPhoto: string; 
     habitName: string;
-    habitIcon: any;
-    postDate?: string;
-    likes?: string[];
-    dislikes?: string[];
-    userLike?: boolean;
-    userDislike?: boolean;
+    habitIcon: string;
+    postDate: string;
+    likes: string[];
+    dislikes: string[];
+    userLike: boolean;
+    userDislike: boolean;
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        /* const response = await getFeedPosts(userId);
-         const data = response.data;
- 
-         const mapped = data.map((post: any, index: number) => ({
-           id: `${post.username}-${post.postDate}-${index}`,
-           ...post,
-         }));
-         
-         setPosts(mapped);*/
+        const response = await getFeedPosts();
+        const data = response.data;
 
-        setPosts(mockPosts);
+        console.log(response.data);
+        const mapped = data.map((post: any, index: number) => ({
+          id: `${post.username}-${post.postDate}-${index}`,
+          ...post,
+        }));
+
+        setPosts(mapped);
+
       } catch (e) {
-        //console.error(e);
-        //setError('Error al obtener los posts');
+        console.error(e);
+        setError('Error al obtener los posts');
       } finally {
         setLoading(false);
       }
@@ -78,80 +54,125 @@ export default function HomeScreen() {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.centered}>
-        <ActivityIndicator size="large" />
-      </SafeAreaView>
+  const handleLike = (postId: string) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+            ...post,
+            userLike: !post.userLike,
+            userDislike: false,
+            likes: post.userLike
+              ? post.likes?.filter((u) => u !== '1')
+              : [...(post.likes ?? []), '1'],
+            dislikes: post.dislikes?.filter((u) => u !== '1'),
+          }
+          : post
+      )
     );
-  }
+  };
 
-  if (error) {
-    return (
-      <SafeAreaView style={styles.centered}>
-        <Text>{error}</Text>
-      </SafeAreaView>
+  const handleDislike = (postId: string) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+            ...post,
+            userDislike: !post.userDislike,
+            userLike: false,
+            dislikes: post.userDislike
+              ? post.dislikes?.filter((u) => u !== '1')
+              : [...(post.dislikes ?? []), '1'],
+            likes: post.likes?.filter((u) => u !== '1'),
+          }
+          : post
+      )
     );
-  }
+  };
 
   const { top } = useSafeAreaInsets();
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>BLOOMPO</Text>
-            <Image
-              source={require('../../assets/icons/bloompo-icon.png')}
-              style={styles.headerIcon}
-              resizeMode="contain"
-            />
+        {/* Condicional para loading */}
+        {loading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" />
           </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity onPress={() => router.push("/invitation/invitations")} style={styles.headerActionIcon}>
-              <IconSymbol name="bell" size={26} color="black" />
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push("/create-post/camera")}>
-              <IconSymbol name="plus.circle" size={26} color="black" />
-            </TouchableOpacity>
+        ) : error ? (
+          // Condicional para error
+          <View style={styles.centered}>
+            <Text>{error}</Text>
           </View>
-        </View>
-
-        {/* Feed */}
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.feedContainer}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.postContainer}>
-              <View style={styles.userRow}>
-                <Image source={item.userPhoto} style={styles.avatar} />
-                <Text style={styles.username}>{item.username}</Text>
+        ) : (
+          // Vista principal cuando todo está bien
+          <>
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                <Text style={styles.headerTitle}>BLOOMPO</Text>
+                <Image
+                  source={require('../../assets/icons/bloompo-icon.png')}
+                  style={styles.headerIcon}
+                  resizeMode="contain"
+                />
               </View>
+              <View style={styles.headerRight}>
+                <TouchableOpacity onPress={() => router.push("/invitation/invitations")} style={styles.headerActionIcon}>
+                 <IconSymbol name="bell" size={26} color="black" />
+                </TouchableOpacity>
 
-              <Image source={typeof item.postPhoto === 'string' ? { uri: item.postPhoto } : item.postPhoto} style={styles.postImage} resizeMode="cover" />
-
-              <View style={styles.habitSection}>
-                <View style={styles.habitRow}>
-                  <Image source={item.habitIcon} style={styles.habitIcon} />
-                  <Text style={styles.habitName}>{item.habitName}</Text>
-                  <View style={styles.buttonRow}>
-                    <TouchableOpacity onPress={() => console.log('Like')} >
-                      <IconSymbol name="hand.thumbsup" size={26} color="black" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => console.log('Dislike')} >
-                      <IconSymbol name="hand.thumbsdown" size={26} color="black" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                <TouchableOpacity onPress={() => router.push("/create-post/camera")}>
+                  <IconSymbol name="plus.circle" size={26} color="black" />
+                </TouchableOpacity>
               </View>
             </View>
-          )}
-        />
+
+            {/* Feed */}
+            <FlatList
+              data={posts}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.feedContainer}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <View style={styles.postContainer}>
+                  <View style={styles.userRow}>
+                    <Image source={require('../../assets/images/gymhabit.jpg')} style={styles.avatar} />
+                    <Text style={styles.username}>{item.username ?? 'Username'}</Text>
+                  </View>
+
+                  <Image source={require('../../assets/images/gymhabit.jpg')} style={styles.postImage} resizeMode="cover" />
+
+                  <View style={styles.habitSection}>
+                    <View style={styles.habitRow}>
+                      <Image source={getHabitIcon(item.habitIcon ?? 'gymlogo.png')} style={styles.habitIcon} />
+                      <Text style={styles.habitName}>{item.habitName ?? 'Habito'}</Text>
+                      <View style={styles.buttonRow}>
+                        <TouchableOpacity onPress={() => handleLike(item.id)} style={styles.reactionButton}>
+                          <IconSymbol
+                            name={item.userLike ? 'hand.thumbsup.fill' : 'hand.thumbsup'}
+                            size={26}
+                            color='grey'
+                          />
+                          <Text style={styles.reactionCount}>{item.likes?.length ?? 0}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDislike(item.id)} style={styles.reactionButton} >
+                          <IconSymbol
+                            name={item.userDislike ? 'hand.thumbsdown.fill' : 'hand.thumbsdown'}
+                            size={26}
+                            color='grey'
+                          />      
+                        <Text style={styles.reactionCount}>{item.dislikes?.length ?? 0}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              )}
+            />
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -179,7 +200,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'heavy',
     fontFamily: "Baloo2Bold",
     marginRight: 5,
   },
@@ -261,5 +281,14 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#6B7280',
     fontWeight: '600',
+  },
+  reactionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  reactionCount: {
+    marginLeft: 4,
+    fontSize: 14,
   },
 });
