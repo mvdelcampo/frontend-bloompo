@@ -52,56 +52,70 @@ export const getGrupos = async () => { return await API.get('/grupos') };
 //export const createGrupo = (data: any) => API.post('/grupos', data);
 // etc.
 
-export const getFeedPosts = (userId: string) => API.get(`/user/${userId}/getFeedPosts`);
+// ---------- Pantalla Home ----------------------
 
-export const getUserPendingGroups = (userId: string) =>
-  API.get(`/user/${userId}/getUserPendingGroups`);
+// Obtener posts para el feed
+export const getFeedPosts = async () => 
+  {return await API.get(`/user/me/getFeedPosts`)};
 
-export const respondToGroupInvitation = (data: {
-  userId: string;
-  groupId: string;
-  accepted: boolean;
-}) => API.post('/user/acceptPendingGroup', data);
-
-export const updatePostReactions = (data: {
-  userId: string;
-  postOwnerUserId: string;
+// Borrar foto
+export const deletePost = async (data: {
   habitName: string;
   postDate: string;
-  like: boolean;
-  dislike: boolean;
-}) => API.post('/user/addLikes', data);
+}) => 
+  {return await API.delete('/user/deletePost', { data })};
 
-export const deletePost = (data: {
-  userId: string;
-  habitName: string;
-  postDate: string;
-}) => API.delete('/user/deletePost', { data });
-
-export const createPost = async (dataPost: {
-  userId: string;
-  habitName: string;
-  post_photo: string;
-}) => {return await API.post('/user/loadHabit', dataPost)};
-
-export const getUserData = (userId: string) =>
-  API.get(`/user/${userId}`);
-
-export const getUserScore = (userId: string) =>
-  API.get(`/user/${userId}/getUserScore`);
-
-export const getUserPets = async (userId: string) =>
-  {return await API.get(`/user/${userId}/pets`)};
-
-export const getUserHabits = async (userId: string) =>
- {return await API.get(`/user/${userId}/habits`)};
-
+// Dar me gusta/no me gusta a foto
 export const addLikes = async (dataPost: {
-  userId: string;
   postOwnerUserId: string;
   habitName: string;
   postDate: Date;
   like: boolean;
   dislike: boolean;
 }) => {return await API.post('/user/addLikes', dataPost)};
+
+// Obtener invitaciones pendientes
+export const getUserInvitations = async () =>
+  {return await API.get(`/user/me/pendingGroups`)};
+
+// Aceptar/Rechazar invitacion pendiente
+export const acceptInvitation = async (data: {
+  groupId: string;
+  accepted: boolean;
+}) => 
+  {return await API.post('/user/acceptPendingGroup', data)};
+
+// Crear post
+export const createPost = async (formData: FormData) => {
+  return await API.post('/user/loadHabit', formData, {
+    timeout: 40000,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+// Obtener habitos del usuario
+export const getUserHabits = async () =>
+ {return await API.get(`/user/me/habits`)};
+
+// ---------- Pantalla Mascota ----------------------
+
+// Obtener mascotas de todos los grupos a los que pertenece un usuario
+export const getUserPets = async () =>
+  {return await API.get(`/user/me/pets`)};
+
+// Obtener puntos (o monedas) del usuario
+export const getUserScore = async () =>
+  {return await API.get(`/user/me/getUserScore`)};
+
+// ------------ Pantalla Usuario --------------------
+
+export const getUserData = async () =>
+  {return await API.get(`/user/me`)};
+
+
+
+
+
 

@@ -1,35 +1,51 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getUserData } from '@/services/api';
+
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const [user, setUser] = useState<User|null>(null);
+  
+    type User = {
+      id: string,
+      mail: string,
+      username: string,
+      coins: number,
+      photo: string,
+    };
 
-  const user = {
-    username: 'valen_habits',
-    fullName: 'Valentina González',
-    email: 'valen@example.com',
-    level: 3,
-    coins: 250,
-    profileImage: require('@/assets/images/gymhabit.jpg'), // imagen local o reemplazá por una URL
-  };
+  useEffect(() => {
+      const getUser = async () => {
+        try {
+          const response = await getUserData();
+          setUser(response.data);
+          console.log(response.data);
+        } catch (error) {
+          console.error('Error al obtener usuario:', error);
+          Alert.alert('Error', 'No se pudo cargar usuario.');
+        }
+      };
+  
+      getUser();
+    }, []);
 
   return (
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
       <View style={styles.container}>
-        <Image source={user.profileImage} style={styles.avatar} />
+        <Image source={require('../../assets/images/gymhabit.jpg')} style={styles.avatar} />
 
-        <Text style={styles.username}>@{user.username}</Text>
-        <Text style={styles.name}>{user.fullName}</Text>
-        <Text style={styles.email}>{user.email}</Text>
+        <Text style={styles.username}>@{user?.username}</Text>
+        <Text style={styles.email}>{user?.mail}</Text>
 
         <View style={styles.statsContainer}>
           <View style={styles.stat}>
-            <Text style={styles.statNumber}>{user.level}</Text>
-            <Text style={styles.statLabel}>Nivel</Text>
+            <Text style={styles.statNumber}>{user?.coins}</Text>
+            <Text style={styles.statLabel}>Puntaje</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statNumber}>{user.coins}</Text>
+            <Text style={styles.statNumber}>{user?.coins}</Text>
             <Text style={styles.statLabel}>Monedas</Text>
           </View>
         </View>

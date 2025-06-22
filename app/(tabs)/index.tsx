@@ -12,7 +12,6 @@ export default function HomeScreen() {
 
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +19,7 @@ export default function HomeScreen() {
     id: string;
     username: string;
     userPhoto: any;
-    postPhoto: string;
+    postPhoto: string; 
     habitName: string;
     habitIcon: string;
     postDate: string;
@@ -31,28 +30,12 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const id = await SecureStore.getItemAsync('userId');
-        if (!id) {
-          Alert.alert('Error', 'No se pudo recuperar el usuario.');
-        }
-        setUserId(id);
-      } catch (err) {
-        console.error('Error recuperando userId:', err);
-        Alert.alert('Error', 'Hubo un problema al acceder al usuario.');
-      }
-    };
-    fetchUserId();
-  }, []);
-
-  useEffect(() => {
     const fetchData = async () => {
-      if (!userId) return;
       try {
-        const response = await getFeedPosts(userId);
+        const response = await getFeedPosts();
         const data = response.data;
 
+        console.log(response.data);
         const mapped = data.map((post: any, index: number) => ({
           id: `${post.username}-${post.postDate}-${index}`,
           ...post,
@@ -69,10 +52,9 @@ export default function HomeScreen() {
     };
 
     fetchData();
-  }, [userId]);
+  }, []);
 
   const handleLike = (postId: string) => {
-    if (!userId) return;
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
@@ -81,9 +63,9 @@ export default function HomeScreen() {
             userLike: !post.userLike,
             userDislike: false,
             likes: post.userLike
-              ? post.likes?.filter((u) => u !== userId)
-              : [...(post.likes ?? []), userId],
-            dislikes: post.dislikes?.filter((u) => u !== userId),
+              ? post.likes?.filter((u) => u !== '1')
+              : [...(post.likes ?? []), '1'],
+            dislikes: post.dislikes?.filter((u) => u !== '1'),
           }
           : post
       )
@@ -91,7 +73,6 @@ export default function HomeScreen() {
   };
 
   const handleDislike = (postId: string) => {
-    if (!userId) return;
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
@@ -100,9 +81,9 @@ export default function HomeScreen() {
             userDislike: !post.userDislike,
             userLike: false,
             dislikes: post.userDislike
-              ? post.dislikes?.filter((u) => u !== userId)
-              : [...(post.dislikes ?? []), userId],
-            likes: post.likes?.filter((u) => u !== userId),
+              ? post.dislikes?.filter((u) => u !== '1')
+              : [...(post.dislikes ?? []), '1'],
+            likes: post.likes?.filter((u) => u !== '1'),
           }
           : post
       )

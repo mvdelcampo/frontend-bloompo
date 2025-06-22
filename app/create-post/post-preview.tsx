@@ -6,19 +6,11 @@ import * as SecureStore from 'expo-secure-store';
 import { getUserHabits, createPost } from '@/services/api';
 import { getHabitIcon } from '@/constants/habitIcons';
 
-
-const dummyHabits = [
-  { id: '1', name: 'Ir al gym', icon: require('../../assets/icons/gymlogo.png') },
-  { id: '2', name: 'Leer 20 pag', icon: require('../../assets/icons/gymlogo.png') },
-  { id: '3', name: 'Meditar antes de dormir', icon: require('../../assets/icons/gymlogo.png') },
-];
-
 export default function PostPreview() {
   const { imageUri } = useLocalSearchParams();
   const router = useRouter();
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
 
   type Habit = {
     id: string,
@@ -27,30 +19,18 @@ export default function PostPreview() {
     color: string
   };
 
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const id = await SecureStore.getItemAsync('userId');
-        if (!id) {
-          Alert.alert('Error', 'No se pudo recuperar el usuario.');
-        }
-        setUserId(id);
-      } catch (err) {
-        console.error('Error recuperando userId:', err);
-        Alert.alert('Error', 'Hubo un problema al acceder al usuario.');
-      }
-    };
-    fetchUserId();
-  }, []);
 
   useEffect(() => {
     const getHabitsByUser = async () => {
-      if (!userId) return;
-
       try {
-        const response = await getUserHabits(userId);
-        console.log(response.data.habits);
-        setHabits(response.data.habits);
+        const response = await getUserHabits();
+         const mapped = response.data.habits.map((habit: any, index: number) => ({
+          id: `${habit.name}-${index}`,
+          name: habit.name,
+          icon: habit.icon,
+          color: habit.color
+        }));
+        setHabits(mapped);
       } catch (error) {
         console.error('Error al obtener hábitos del usuario:', error);
         Alert.alert('Error', 'No se pudieron cargar los hábitos.');
@@ -58,27 +38,39 @@ export default function PostPreview() {
     };
 
     getHabitsByUser();
-  }, [userId]);
+  }, []);
 
   const handleShare = async () => {
-    console.log('Imagen:', imageUri);
-    console.log('Hábito seleccionado:', selectedHabit?.name);
-    if (!selectedHabit || !imageUri || !userId) {
+
+    if (!selectedHabit || !imageUri) {
       Alert.alert('Error', 'Faltan datos para compartir el post.');
       return;
     }
+
 
     if (!selectedHabit) {
       Alert.alert('Error', 'No se encontró el hábito seleccionado.');
       return;
     }
 
+    const formData = new FormData();
+    const rawUri = Array.isArray(imageUri) ? imageUri[0] : imageUri;
+    const filename = rawUri.split('/').pop()!;
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : `image`;
+
+    formData.append('post_photo', {
+    uri: rawUri,
+    name: filename,
+    type,
+    } as any);
+
+    formData.append('habitName', selectedHabit.name);
+    console.log(formData);
+
     try {
-      await createPost({
-        userId,
-        habitName: selectedHabit.name,
-        post_photo: imageUri as string,
-      });
+      await createPost(formData);
+
 
       Alert.alert('Éxito', 'Post compartido correctamente.');
       router.replace('/(tabs)');

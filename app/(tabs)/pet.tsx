@@ -4,8 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState, useEffect } from 'react';
 import { Colors } from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { getUserPets, getUserScore } from '@/services/api';
-import * as SecureStore from 'expo-secure-store';
+import { getUserPets, getUserData } from '@/services/api';
 
 export default function PetScreen() {
   const [petsData, setPetsData] = useState<Pet[]>([]);
@@ -13,14 +12,12 @@ export default function PetScreen() {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentHealth, setCurrentHealth] = useState<number>(0);
-  const [userId, setUserId] = useState<string | null>(null);
-
 
   type Pet = {
     id: string;
-    group_name: string;
-    pet_name: string;
-    pet_status: 'happy' | 'sad';
+    groupName: string;
+    petName: string;
+    petStatus: 'superhappy' | 'happy' | 'sad';
   };
 
   const screenWidth = Dimensions.get('window').width;
@@ -33,42 +30,32 @@ export default function PetScreen() {
     if (viewableItems.length > 0) {
       const visibleItem = viewableItems[0].item as Pet;
       const index = petsData.findIndex(p => p.id === visibleItem.id);
-      const health = visibleItem.pet_status === 'happy' ? 10 : 4;
+      const health = visibleItem.petStatus === 'happy' ? 10 : 4;
       setCurrentHealth(health);
       setCurrentIndex(index);
     }
   });
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const id = await SecureStore.getItemAsync('userId');
-        if (!id) {
-          Alert.alert('Error', 'No se pudo recuperar el usuario.');
-        }
-        setUserId(id);
-      } catch (err) {
-        console.error('Error recuperando userId:', err);
-        Alert.alert('Error', 'Hubo un problema al acceder al usuario.');
-      }
-    };
-    fetchUserId();
-  }, []);
-
-  useEffect(() => {
     const fetchData = async () => {
-      if (!userId) return;
       try {
-        const [petsResponse, scoreResponse] = await Promise.all([
-          getUserPets(userId),
-          getUserScore(userId),
+        const [petsResponse, userResponse] = await Promise.all([
+          getUserPets(),
+          getUserData(),
         ]);
 
-        const pets = petsResponse.data;
-        const score = scoreResponse.data;
+        const pets = petsResponse.data.pets;
+        const user = userResponse.data;
 
-        setPetsData(pets);
-        setCoins(score?.score || 0);
+        const mappedPets = pets.map((pet: any, index: number) => ({
+          id: `${pet.group_name}-${index}`,
+          groupName: pet.group_name,
+          petName: pet.pet_name,
+          petStatus: pet.pet_status
+        }));
+        
+        setPetsData(mappedPets);
+        setCoins(user?.coins || 0);
 
         if (pets.length > 0) {
           setCurrentHealth(pets[0].pet_status === 'happy' ? 10 : 4);
@@ -81,26 +68,8 @@ export default function PetScreen() {
     };
 
     fetchData();
-  }, [userId]);
+  }, []);
 
-  const mockPetsData = [
-    {
-      id: '1',
-      name: 'Bloompi',
-      group: 'Fitness Team',
-      image: require('../../assets/images/bloompo.png'),
-      health: 7,
-    },
-    {
-      id: '2',
-      name: 'Pipi',
-      group: 'El mejor equipo',
-      image: require('../../assets/images/bloompo-sad.png'),
-      health: 3,
-    },
-  ];
-
-  const mockCoins = 200;
   const scrollToPrev = () => {
     if (currentIndex > 0) {
       flatListRef.current?.scrollToIndex({ index: currentIndex - 1 });
@@ -115,15 +84,15 @@ export default function PetScreen() {
 
   const renderPet = ({ item }: { item: Pet }) => {
     const imageSource =
-      item.pet_status === 'happy'
+      item.petStatus === 'happy'
         ? require('../../assets/images/bloompo.png')
         : require('../../assets/images/bloompo-sad.png');
 
     return (
       <View style={[styles.petContainer, { width: screenWidth * 0.8 }]}>
         <Image source={imageSource} style={styles.petImage} />
-        <Text style={styles.petName}>{item.pet_name}</Text>
-        <Text style={styles.groupName}>{item.group_name}</Text>
+        <Text style={styles.petName}>{item.petName}</Text>
+        <Text style={styles.groupName}>{item.groupName}</Text>
       </View>
     );
   };
