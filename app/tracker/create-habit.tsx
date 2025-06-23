@@ -8,114 +8,264 @@ import {
 	ScrollView,
 	TouchableOpacity,
 	FlatList,
+	Alert,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
-import { useState } from "react";
-import { Stack } from "expo-router";
+import { useEffect, useState } from "react";
+import { router, Stack } from "expo-router";
+import { addGroupToHabit, createHabit, getUserGroups } from "@/services/api";
 
-const icons = { // TODO usar lo de Vale
+const icons = {
+	// TODO usar lo de Vale?
 	gym: require("@/assets/icons/gymlogo.png"),
 	art: require("@/assets/icons/artlogo.png"),
 	healthy: require("@/assets/icons/healthylogo.png"),
 	meditate: require("@/assets/icons/meditatelogo.png"),
-	reed: require("@/assets/icons/reedlogo.png"),
+	read: require("@/assets/icons/reedlogo.png"),
 	sleep: require("@/assets/icons/sleeplogo.png"),
 	walk: require("@/assets/icons/walklogo.png"),
 	water: require("@/assets/icons/waterlogo.png"),
 };
 
-export default function CreateGroupScreen() {
-	const [email, setEmail] = useState("");
-	const [friends, setFriends] = useState<string[]>([]);
+type Group = {
+	id: string;
+	name: string;
+	color: string;
+	selected: boolean;
+};
 
-	const addFriend = () => {
-		if (email.trim() !== "" && !friends.includes(email.trim())) {
-			setFriends([...friends, email.trim()]);
-			setEmail("");
+export default function CreateHabitScreen() {
+	const [name, setName] = useState("");
+	const [selectedIcon, setSelectedIcon] = useState("");
+	const [frequency, setFrequency] = useState(1);
+	const [groups, setGroups] = useState<Group[]>([]);
+	const [selectedGroupsIds, setSelectedGroupsIds] = useState<string[]>([]);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const responseGroups = await getUserGroups();
+				const data = responseGroups.data.groups.map((group: any) => ({
+					id: group.id,
+					name: group.name,
+					color: group.color,
+					selected: false, // Inicialmente no está seleccionado
+				}));
+				setGroups(data);
+			} catch (error) {
+				console.error("Error al cargar grupos:", error);
+			}
+		};
+		fetchData();
+	}, []);
+
+	const handlePressGroup = (group: Group) => {
+		if (!group) return;
+		if (group.selected) {
+			// Si el grupo ya está seleccionado, lo deseleccionamos
+			setGroups(
+				groups.map((g) =>
+					g.id === group.id ? { ...g, selected: false } : g
+				)
+			);
+			removeGroup(group.id);
+		} else {
+			// Si el grupo no está seleccionado, lo seleccionamos
+			setGroups(
+				groups.map((g) =>
+					g.id === group.id ? { ...g, selected: true } : g
+				)
+			);
+			addGroup(group.id);
 		}
 	};
 
-	const removeFriend = (email: string) => {
-		setFriends(friends.filter((f) => f !== email));
+	const addGroup = (groupId: string) => {
+		if (!selectedGroupsIds.includes(groupId)) {
+			setSelectedGroupsIds([...selectedGroupsIds, groupId]);
+		}
 	};
 
-	const handleSaveHabit = () => {
-		// TODO logica
-		// Si es exitosa:
-		console.log("save habit");
-		//router.replace('/(tabs)/tracker');
+	const removeGroup = (groupId: string) => {
+		setSelectedGroupsIds(selectedGroupsIds.filter((g) => g !== groupId));
+	};
+
+	const increment = () => {
+		if (frequency < 7) setFrequency((prev) => prev + 1);
+	};
+
+	const decrement = () => {
+		if (frequency > 1) setFrequency((prev) => prev - 1);
+	};
+
+	const handleSaveHabit = async () => {
+		if (!name || !selectedIcon || !frequency) {
+			Alert.alert(
+				"Error",
+				"Tenés que completar todos los campos para Guardar"
+			);
+			return;
+		}
+
+		try {
+			const habitData = {
+				habit: {
+					name: name,
+					icon: selectedIcon,
+					frequency: frequency,
+					color: "no color",
+				},
+			};
+			console.log(habitData);
+			console.log("selectedGroupsIds:", selectedGroupsIds);
+
+			const response = await createHabit(habitData);
+			if (response.status == 201 || response.status == 200) {
+				//console.log("Habito creado:", response.data);
+
+				// si no se selecciona ningun grupo, no se asocia a ninguno, pero queda guardado como del usuario
+				for (let i = 0; i < selectedGroupsIds.length; i++) {
+					try {
+						await addGroupToHabit({
+							habitName: name,
+							newGroupId: selectedGroupsIds[i],
+						});
+					} catch (error) {
+						console.error(
+							`Error al agregar habito a grupo ${selectedGroupsIds[i]}:`,
+							error
+						);
+					}
+				}
+				Alert.alert("Éxito", "Hábito creado exitosamente!");
+				router.replace("/(tabs)/tracker");
+			}
+		} catch (error) {
+			// console.error("Error al crear hábito:", error);
+			if (
+				typeof error === "object" &&
+				error !== null &&
+				"response" in error &&
+				typeof (error as any).response === "object"
+			) {
+				console.log((error as any).response?.data);
+				Alert.alert(
+					"Error",
+					(error as any).response?.data.error
+				);	
+			}
+		}
 	};
 
 	return (
 		<>
-		<Stack.Screen options={{ title: 'Crear hábito', headerShown: true, headerTintColor: 'black', headerBackTitle: 'Atrás', }} />
-		<SafeAreaView style={styles.safeArea}>
-			<View style={styles.container}>
-				<Text style={styles.title}>Crear hábito</Text>
-				<View style={styles.base}>
-					<Text style={styles.label}>Nombre:</Text>
-					<TextInput style={styles.input} placeholder="Mi hábito" />
-					<Text style={styles.label}>Elige un ícono:</Text>
+			<Stack.Screen
+				options={{
+					title: "Crear hábito",
+					headerShown: true,
+					headerTintColor: "black",
+					headerBackTitle: "Atrás",
+				}}
+			/>
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
+					<Text style={styles.title}>Crear hábito</Text>
+					<View style={styles.base}>
+						<Text style={styles.label}>Nombre:</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Mi hábito"
+							value={name}
+							onChangeText={setName}
+						/>
+						<Text style={styles.label}>Elige un ícono:</Text>
 
-					<View style={styles.iconsRow}>
-						{Object.entries(icons).map(([key, source]) => (
-							<TouchableOpacity
-								key={key}
-								style={styles.iconCircle}
-								onPress={() => {
-									console.log("Icono seleccionado:", key);
-								}}
-							>
-								<Image
-									source={source}
-									style={styles.iconImage}
-								/>
-							</TouchableOpacity>
-						))}
-					</View>
-
-					<Text style={styles.label}>¡Agrega amigos!</Text>
-
-					<View style={styles.emailInputContainer}>
-						<View style={styles.tagsContainer}>
-							{friends.map((friend, index) => (
-								<View key={index} style={styles.tag}>
-									<Text style={styles.tagText}>{friend}</Text>
-									<TouchableOpacity
-										onPress={() => removeFriend(friend)}
-									>
-										<Text style={styles.tagRemove}>X</Text>
-									</TouchableOpacity>
-								</View>
-							))}
-							<View style={styles.inputWithButton}>
-								<TextInput
-									placeholder="Escribe su correo electrónico"
-									value={email}
-									onChangeText={setEmail}
-									onSubmitEditing={addFriend}
-									style={styles.tagInput}
-									keyboardType="email-address"
-									autoCapitalize="none"
-								/>
-								<TouchableOpacity onPress={addFriend}>
-									<Text style={styles.addSign}>+</Text>
+						<View style={styles.iconsRow}>
+							{Object.entries(icons).map(([key, source]) => (
+								<TouchableOpacity
+									key={key}
+									style={[
+										styles.iconCircle,
+										key === selectedIcon &&
+											styles.selectedIcon,
+									]}
+									onPress={() => {
+										setSelectedIcon(key);
+									}}
+								>
+									<Image
+										source={source}
+										style={styles.iconImage}
+									/>
 								</TouchableOpacity>
-							</View>
+							))}
 						</View>
-					</View>
 
-					<TouchableOpacity
-						style={styles.button1}
-						onPress={handleSaveHabit}
-					>
-						<Text style={styles.buttonText}>Guardar</Text>
-					</TouchableOpacity>
+						<Text style={styles.label}>
+							¡Agrega tu hábito a un grupo!
+						</Text>
+						<Text style={styles.label2}>
+							(opcional: si no lo haces se guardará como hábito
+							personal)
+						</Text>
+
+						<ScrollView
+							horizontal
+							showsHorizontalScrollIndicator={false}
+							style={{ maxHeight: 100, marginHorizontal: 10 }}
+						>
+							{groups.map((item, index) => (
+								<TouchableOpacity
+									key={index}
+									onPress={() => handlePressGroup(item)}
+								>
+									<View
+										key={index}
+										style={[
+											styles.box,
+											{
+												backgroundColor: item.color,
+											},
+											item.selected
+												? styles.selectedBox
+												: {},
+											,
+										]}
+									>
+										<Text style={styles.groupName}>
+											{item.name}
+										</Text>
+									</View>
+								</TouchableOpacity>
+							))}
+						</ScrollView>
+						<Text style={styles.label}>Frecuencia semanal:</Text>
+						<View style={styles.selector}>
+							<TouchableOpacity
+								onPress={decrement}
+								style={styles.buttonFreq}
+							>
+								<Text style={styles.sign}>−</Text>
+							</TouchableOpacity>
+							<Text style={styles.frequency}>{frequency}</Text>
+							<TouchableOpacity
+								onPress={increment}
+								style={styles.buttonFreq}
+							>
+								<Text style={styles.sign}>+</Text>
+							</TouchableOpacity>
+						</View>
+						<TouchableOpacity
+							style={styles.button1}
+							onPress={handleSaveHabit}
+						>
+							<Text style={styles.buttonText}>Guardar</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
-			</View>
 			</SafeAreaView>
-			</>
+		</>
 	);
 }
 
@@ -127,9 +277,8 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		paddingHorizontal: 10,
-		padding: 20, // deja el texto arriba, separado del borde
 		backgroundColor: Colors.backgroundWhite,
-		justifyContent: "center", // alineamos todo arriba
+		justifyContent: "flex-start", // alineamos todo arriba
 		alignItems: "center",
 	},
 	header: {
@@ -139,11 +288,12 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		color: Colors.darkGrey,
-		fontSize: 30,
+		fontSize: 25,
 		fontWeight: "bold",
 		alignContent: "flex-start",
 		textAlign: "center",
-		margin: 10,
+		marginTop: 10,
+		marginBottom: 10,
 		justifyContent: "flex-start",
 	},
 	headerIcon: {
@@ -154,11 +304,11 @@ const styles = StyleSheet.create({
 	base: {
 		position: "relative",
 		width: "85%",
-		height: "85%",
+		height: "88%",
 		backgroundColor: Colors.wingsBloompo,
 		borderRadius: 16,
 		justifyContent: "flex-start",
-		paddingTop: 30,
+		paddingTop: 10,
 		alignItems: "center",
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
@@ -171,35 +321,45 @@ const styles = StyleSheet.create({
 		flexWrap: "wrap",
 		justifyContent: "center",
 		gap: 10,
+		marginBottom: 10,
 	},
 	iconCircle: {
-		width: 60,
-		height: 60,
+		width: 55,
+		height: 55,
 		borderRadius: 30,
 		overflow: "hidden",
 		justifyContent: "center",
 		alignItems: "center",
 	},
 	iconImage: {
-		width: 40,
-		height: 40,
+		width: 50,
+		height: 50,
 		resizeMode: "contain",
 	},
 	input: {
 		padding: 10,
 		backgroundColor: Colors.backgroundWhite, // fondo blanco
 		borderRadius: 10, // bordes redondeados
-		paddingHorizontal: 30,
+		width: "60%",
+		height: "8%",
 		fontSize: 16,
 		marginVertical: 8,
+		textAlign: "center",
 	},
 	label: {
-		marginBottom: 4,
-		marginTop: 12,
+		marginVertical: 4,
 		color: Colors.darkGrey, // marrón oscuro
-		fontSize: 20,
+		fontSize: 18,
 		fontWeight: "700",
 		fontFamily: "Fredoka",
+	},
+	label2: {
+		marginBottom: 2,
+		color: Colors.darkGrey, // marrón oscuro
+		fontSize: 16,
+		fontWeight: "600",
+		fontFamily: "Fredoka",
+		textAlign: "center",
 	},
 	button1: {
 		backgroundColor: Colors.bloompoYellow,
@@ -207,7 +367,8 @@ const styles = StyleSheet.create({
 		padding: 6,
 		paddingHorizontal: 15,
 		margin: 12,
-		marginBottom: 20,
+		marginTop: 12,
+		marginBottom: 15,
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,
@@ -255,6 +416,7 @@ const styles = StyleSheet.create({
 		marginTop: 5,
 		marginRight: 5,
 	},
+
 	emailInputContainer: {
 		width: "100%",
 		marginVertical: 8,
@@ -308,5 +470,56 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		fontSize: 26,
 		alignSelf: "center",
+	},
+	box: {
+		marginTop: 8,
+		marginBottom: 8,
+		margin: 5,
+		width: 80,
+		height: 40,
+		borderRadius: 8,
+		alignContent: "center",
+		justifyContent: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 5, // sombra para android
+	},
+	selectedBox: {
+		borderWidth: 2,
+		borderColor: Colors.mediumGrey,
+		shadowOpacity: 0,
+	},
+	selectedIcon: {
+		borderWidth: 4,
+		borderColor: Colors.mediumGrey,
+	},
+	groupName: {
+		color: Colors.darkGrey,
+		fontWeight: "bold",
+		textAlign: "center",
+		fontSize: 12,
+	},
+	selector: {
+		flexDirection: "row",
+		backgroundColor: "#FFF5EE",
+		borderRadius: 25,
+		alignItems: "center",
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		marginVertical: 6,
+	},
+	buttonFreq: {
+		paddingHorizontal: 10,
+	},
+	sign: {
+		fontSize: 24,
+		color: "#333",
+	},
+	frequency: {
+		fontSize: 20,
+		fontWeight: "bold",
+		marginHorizontal: 10,
 	},
 });

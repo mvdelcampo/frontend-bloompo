@@ -13,9 +13,13 @@ import {
 import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
 import { useState, useEffect } from "react";
-import { getGroup, editGroup, sendInvitation, deleteFriend } from "../../services/api";
+import {
+	getGroup,
+	editGroup,
+	sendInvitation,
+	deleteFriend,
+} from "../../services/api";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-const { groupId } = useLocalSearchParams();
 
 type EditableGroup = {
 	name: string;
@@ -34,8 +38,9 @@ const groupsColors = [
 	Colors.strongBlue,
 ];
 
-export default function CreateGroupScreen() {
+export default function EditGroupScreen() {
 	const router = useRouter();
+	const { groupId } = useLocalSearchParams();
 	const [selectedGroup, setSelectedGroup] = useState<EditableGroup>();
 	const [selectedGroupId, setSelectedGroupId] = useState("");
 	const [email, setEmail] = useState("");
@@ -47,20 +52,24 @@ export default function CreateGroupScreen() {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-
 				let id: string | undefined;
 				if (Array.isArray(groupId)) {
-					setSelectedGroupId(groupId[0]);
+					id = groupId[0];
 				} else {
-					setSelectedGroupId(groupId);
+					id = groupId;
 				}
+
 				if (typeof id === "string") {
-					const response = await getGroup(selectedGroupId);
+					console.log("id", id)
+					setSelectedGroupId(id); // actualizo estado
+					const response = await getGroup(id);
 					const group: EditableGroup = {
 						name: response.data.name,
 						color: response.data.color,
 						pet_name: response.data.pet_name,
-						members: response.data.members.map((member: { mail: string }) => member.mail)
+						members: response.data.members.map(
+							(member: { mail: string }) => member.mail
+						),
 					};
 					setSelectedGroup(group);
 					setFriends(group.members);
@@ -76,7 +85,7 @@ export default function CreateGroupScreen() {
 			}
 		};
 		fetchData();
-	}, []);
+	}, [groupId]);
 
 	const addFriend = () => {
 		if (email.trim() !== "" && !friends.includes(email.trim())) {
@@ -110,19 +119,23 @@ export default function CreateGroupScreen() {
 			if (response.status == 200) {
 				console.log("Grupo editado:", response.data);
 
-				const removed = friends.filter(friend => !selectedGroup?.members.includes(friend));
-				const added = selectedGroup?.members?.filter(member => !friends.includes(member));
+				const removed = friends.filter(
+					(friend) => !selectedGroup?.members.includes(friend)
+				);
+				const added = selectedGroup?.members?.filter(
+					(member) => !friends.includes(member)
+				);
 
 				for (const email of added ?? []) {
 					try {
 						await sendInvitation({
-						friendEmail: email,
-						groupId: selectedGroupId,
+							friendEmail: email,
+							groupId: selectedGroupId,
 						});
 					} catch (invitationError) {
 						console.error(
-						`Error al invitar a ${email}:`,
-						invitationError
+							`Error al invitar a ${email}:`,
+							invitationError
 						);
 					}
 				}
@@ -130,17 +143,17 @@ export default function CreateGroupScreen() {
 				for (const email of removed ?? []) {
 					try {
 						await deleteFriend({
-						friendEmail: email,
-						groupId: selectedGroupId,
+							friendEmail: email,
+							groupId: selectedGroupId,
 						});
 					} catch (invitationError) {
 						console.error(
-						`Error al eliminar a ${email}:`,
-						invitationError
+							`Error al eliminar a ${email}:`,
+							invitationError
 						);
 					}
 				}
-				
+
 				router.replace("/(tabs)/tracker");
 			} else {
 				Alert.alert(
@@ -153,89 +166,102 @@ export default function CreateGroupScreen() {
 		}
 	};
 
-    return (
-        <>
-		<Stack.Screen options={{ title: 'Editar grupo', headerShown: true, headerTintColor: 'black', headerBackTitle: 'Atrás', }} />
-		<SafeAreaView style={styles.safeArea}>
-			<View style={styles.container}>
-				<Text style={styles.title}>Editar grupo</Text>
-				<View style={styles.base}>
-					<Text style={styles.label}>Nombre:</Text>
-					<TextInput
-						style={styles.input}
-						value={groupName}
-						onChangeText={setGroupName}
-					/>
-					<Text style={styles.label}>Color:</Text>
+	return (
+		<>
+			<Stack.Screen
+				options={{
+					title: "Editar grupo",
+					headerShown: true,
+					headerTintColor: "black",
+					headerBackTitle: "Atrás",
+				}}
+			/>
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
+					<Text style={styles.title}>Editar grupo</Text>
+					<View style={styles.base}>
+						<Text style={styles.label}>Nombre:</Text>
+						<TextInput
+							style={styles.input}
+							value={groupName}
+							onChangeText={setGroupName}
+						/>
+						<Text style={styles.label}>Color:</Text>
 
-					<View style={styles.colorsRow}>
-						{groupsColors.map((color, index) => (
-							<TouchableOpacity
-								key={index}
-								style={[
-									styles.colorsCircle,
-									{ backgroundColor: color },
-									color === selectedColor &&
-										styles.selectedColorCircle,
-								]}
-								onPress={() => {
-									setSelectedColor(color);
-								}}
-							/>
-						))}
-					</View>
+						<View style={styles.colorsRow}>
+							{groupsColors.map((color, index) => (
+								<TouchableOpacity
+									key={index}
+									style={[
+										styles.colorsCircle,
+										{ backgroundColor: color },
+										color === selectedColor &&
+											styles.selectedColorCircle,
+									]}
+									onPress={() => {
+										setSelectedColor(color);
+									}}
+								/>
+							))}
+						</View>
 
-					<Text style={styles.label}>Miembros del grupo:</Text>
+						<Text style={styles.label}>Miembros del grupo:</Text>
 
-					<View style={styles.emailInputContainer}>
-						<View style={styles.tagsContainer}>
-							{friends.map((friend, index) => (
-								<View key={index} style={styles.tag}>
-									<Text style={styles.tagText}>{friend}</Text>
-									<TouchableOpacity
-										onPress={() => removeFriend(friend)}
-									>
-										<Text style={styles.tagRemove}>X</Text>
+						<View style={styles.emailInputContainer}>
+							<View style={styles.tagsContainer}>
+								{friends.map((friend, index) => (
+									<View key={index} style={styles.tag}>
+										<Text style={styles.tagText}>
+											{friend}
+										</Text>
+										<TouchableOpacity
+											onPress={() => removeFriend(friend)}
+										>
+											<Text style={styles.tagRemove}>
+												X
+											</Text>
+										</TouchableOpacity>
+									</View>
+								))}
+								<View style={styles.inputWithButton}>
+									<TextInput
+										placeholder="Escribe su correo electrónico"
+										value={email}
+										onChangeText={setEmail}
+										onSubmitEditing={addFriend}
+										style={styles.tagInput}
+										keyboardType="email-address"
+										autoCapitalize="none"
+									/>
+									<TouchableOpacity onPress={addFriend}>
+										<Text style={styles.addSign}>+</Text>
 									</TouchableOpacity>
 								</View>
-							))}
-							<View style={styles.inputWithButton}>
-								<TextInput
-									placeholder="Escribe su correo electrónico"
-									value={email}
-									onChangeText={setEmail}
-									onSubmitEditing={addFriend}
-									style={styles.tagInput}
-									keyboardType="email-address"
-									autoCapitalize="none"
-								/>
-								<TouchableOpacity onPress={addFriend}>
-									<Text style={styles.addSign}>+</Text>
-								</TouchableOpacity>
 							</View>
 						</View>
+
+						<Text style={styles.label}>
+							Nombre de la mascota grupal:
+						</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Milo"
+							value={petName}
+							onChangeText={setPetName}
+						/>
+
+						<TouchableOpacity
+							style={styles.button1}
+							onPress={handleSaveGroup}
+						>
+							<Text style={styles.buttonText}>
+								Guardar
+							</Text>
+						</TouchableOpacity>
 					</View>
-
-					<Text style={styles.label}>
-						Nombre de la mascota grupal:
-					</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="Milo"
-						value={petName}
-						onChangeText={setPetName}
-					/>
-
-					<TouchableOpacity
-						style={styles.button1}
-						onPress={handleSaveGroup}
-					>
-						<Text style={styles.buttonText}>Guardar cambios</Text>
-					</TouchableOpacity>
 				</View>
-			</View>
-            </SafeAreaView>
-            </>
+			</SafeAreaView>
+		</>
 	);
 }
 
@@ -247,9 +273,8 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		paddingHorizontal: 10,
-		padding: 20, // deja el texto arriba, separado del borde
 		backgroundColor: Colors.backgroundWhite,
-		justifyContent: "center", // alineamos todo arriba
+		justifyContent: "flex-start", // alineamos todo arriba
 		alignItems: "center",
 	},
 	header: {
@@ -259,11 +284,12 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		color: Colors.darkGrey,
-		fontSize: 30,
+		fontSize: 25,
 		fontWeight: "bold",
 		alignContent: "flex-start",
 		textAlign: "center",
-		margin: 10,
+		marginTop: 10,
+		marginBottom: 10,
 		justifyContent: "flex-start",
 	},
 	headerIcon: {
@@ -274,11 +300,11 @@ const styles = StyleSheet.create({
 	base: {
 		position: "relative",
 		width: "85%",
-		height: "85%",
+		height: "86%",
 		backgroundColor: Colors.wingsBloompo,
 		borderRadius: 16,
-		justifyContent: "flex-start",
-		paddingTop: 30,
+		justifyContent: "center",
+		paddingTop: 10,
 		alignItems: "center",
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
@@ -304,15 +330,17 @@ const styles = StyleSheet.create({
 		padding: 10,
 		backgroundColor: Colors.backgroundWhite, // fondo blanco
 		borderRadius: 10, // bordes redondeados
-		paddingHorizontal: 30,
+		width: "60%",
+		height: "8%",
+		textAlign: "center",
 		fontSize: 16,
 		marginVertical: 8,
 	},
 	label: {
-		marginBottom: 4,
-		marginTop: 12,
+		marginBottom: 5,
+		marginTop: 10,
 		color: Colors.darkGrey, // marrón oscuro
-		fontSize: 20,
+		fontSize: 18,
 		fontWeight: "700",
 		fontFamily: "Fredoka",
 	},
@@ -323,6 +351,8 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 15,
 		margin: 12,
 		marginBottom: 20,
+				marginTop:20,
+
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,

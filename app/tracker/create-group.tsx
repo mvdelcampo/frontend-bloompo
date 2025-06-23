@@ -189,9 +189,8 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		paddingHorizontal: 10,
-		padding: 20, // deja el texto arriba, separado del borde
 		backgroundColor: Colors.backgroundWhite,
-		justifyContent: "center", // alineamos todo arriba
+		justifyContent: "flex-start", // alineamos todo arriba
 		alignItems: "center",
 	},
 	header: {
@@ -201,11 +200,12 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		color: Colors.darkGrey,
-		fontSize: 30,
+		fontSize: 25,
 		fontWeight: "bold",
 		alignContent: "flex-start",
 		textAlign: "center",
-		margin: 10,
+		marginTop: 10,
+		marginBottom: 10,
 		justifyContent: "flex-start",
 	},
 	headerIcon: {
@@ -216,11 +216,11 @@ const styles = StyleSheet.create({
 	base: {
 		position: "relative",
 		width: "85%",
-		height: "85%",
+		height: "86%",
 		backgroundColor: Colors.wingsBloompo,
 		borderRadius: 16,
 		justifyContent: "flex-start",
-		paddingTop: 30,
+		paddingTop: 10,
 		alignItems: "center",
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
@@ -246,15 +246,17 @@ const styles = StyleSheet.create({
 		padding: 10,
 		backgroundColor: Colors.backgroundWhite, // fondo blanco
 		borderRadius: 10, // bordes redondeados
-		paddingHorizontal: 30,
 		fontSize: 16,
 		marginVertical: 8,
+		width: "60%",
+		height: "8%",
+		textAlign: "center",
 	},
 	label: {
-		marginBottom: 4,
-		marginTop: 12,
+		marginBottom: 5,
+		marginTop: 10,
 		color: Colors.darkGrey, // marrón oscuro
-		fontSize: 20,
+		fontSize: 18,
 		fontWeight: "700",
 		fontFamily: "Fredoka",
 	},
@@ -264,7 +266,8 @@ const styles = StyleSheet.create({
 		padding: 6,
 		paddingHorizontal: 15,
 		margin: 12,
-		marginBottom: 20,
+		marginBottom: 15,
+		marginTop:20,
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,

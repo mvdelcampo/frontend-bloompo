@@ -50,8 +50,9 @@ export default function LoginScreen() {
 					"Error",
 					"Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo"
 				);
+				
 			}
-			// console.error("Error login:", error);
+			 console.error("Error login:", error);
 		}
 	};
 
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
 		height: 80,
 	},
 	appName: {
-		color: Colors.lettersBloompo,
+		color: Colors.darkGrey,
 		fontSize: 48,
 		fontFamily: "Baloo2ExtraBold",
 	},
@@ -185,19 +186,21 @@ const styles = StyleSheet.create({
 		elevation: 5,
 		padding: 20,
 		marginVertical: 0,
+		marginTop: -150, // para que se superponga un poco a la imagen
 	},
 	input: {
 		padding: 10,
 		backgroundColor: Colors.backgroundWhite, // fondo blanco
 		borderRadius: 10, // bordes redondeados
-		paddingHorizontal: 30,
+		width: "90%",
+		textAlign: "center",
 		fontSize: 16,
 		marginVertical: 8,
 	},
 	label: {
 		marginBottom: 2,
 		marginTop: 4,
-		color: Colors.lettersBloompo, // marrón oscuro
+		color: Colors.darkGrey, // marrón oscuro
 		fontSize: 20,
 		fontWeight: "700",
 		fontFamily: "Fredoka",
@@ -208,6 +211,9 @@ const styles = StyleSheet.create({
 		padding: 6,
 		paddingHorizontal: 15,
 		margin: 12,
+		width: "70%",
+		textAlign: "center",
+		alignItems: "center",
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,
@@ -218,8 +224,8 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	buttonText: {
-		color: Colors.lettersBloompo,
-		fontSize: 16,
+		color: Colors.darkGrey,
+		fontSize: 18,
 		fontWeight: "700",
 	},
 });

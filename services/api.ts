@@ -21,7 +21,7 @@ API.interceptors.request.use(
     // Rutas que NO deben llevar token
     const excludedRoutes = ['/user/login', '/user/create'];
 
-    const isExcluded = config.url && excludedRoutes.some(route => config.url?.includes(route));
+    const isExcluded = config.url && excludedRoutes.some(route => config.url?.endsWith(route));
 
     if (token && !isExcluded) {
       config.headers.set('Authorization', `Bearer ${token}`);
@@ -49,6 +49,7 @@ export const register = async (userData: {
 }) => { return await API.post('/user/create', userData) };
 
 
+// ---------- Pantalla Tracker ----------------------
 
 export const createGroup = async (data: {
 	name: string;
@@ -59,7 +60,7 @@ export const createGroup = async (data: {
 };
 
 export const getGroup = async (groupId: string) => {
-	return await API.post(`/group/${groupId}`);
+	return await API.get(`/group/${groupId}`);
 };
 
 export const editGroup = async (data: {
@@ -68,7 +69,7 @@ export const editGroup = async (data: {
 	color: string;
 	pet_name: string;
 }) => {
-	return await API.put("/group/edit", data);
+	return await API.post("/group/edit", data);
 };
 
 export const createHabit = async (data: {
@@ -76,10 +77,17 @@ export const createHabit = async (data: {
 		name: string;
 		icon: string;
 		color: string;
-		frequency: string;
+		frequency: number;
 	};
 }) => {
 	return await API.post("/user/createHabit", data);
+};
+
+export const addGroupToHabit = async (data: {
+  habitName: string,
+  newGroupId: string
+}) => {
+	return await API.post("/user/addGroupToHabit", data);
 };
 
 export const sendInvitation = async (data: {
@@ -105,8 +113,13 @@ export const getGroupRanking = async (groupId: string) => {
 };
 
 export const getHabitsFromGroup = async (groupId: string) => {
-	return await API.get(`/group/${groupId}/getHabits`);
+  return await API.get(`/group/${groupId}/getHabits`);
+  
 };
+export const getHabitsFromUser = async () => {
+	return await API.get(`/user/me/habits`);
+};
+
 
 // ---------- Pantalla Home ----------------------
 

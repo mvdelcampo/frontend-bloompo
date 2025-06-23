@@ -30,6 +30,7 @@ const MAPPING = {
   'dollarsign.circle.fill': 'attach-money',
   'storefront': 'store',
   'plus': 'add',
+  'ellipsis': 'more-horiz',
 
 } as IconMapping;
 
