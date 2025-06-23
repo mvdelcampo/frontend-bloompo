@@ -19,7 +19,7 @@ export default function HomeScreen() {
     id: string;
     username: string;
     userPhoto: any;
-    postPhoto: string; 
+    postPhoto: string;
     habitName: string;
     habitIcon: string;
     postDate: string;
@@ -35,7 +35,7 @@ export default function HomeScreen() {
         const response = await getFeedPosts();
         const data = response.data;
 
-        console.log(response.data);
+        //console.log(response.data);
         const mapped = data.map((post: any, index: number) => ({
           id: `${post.username}-${post.postDate}-${index}`,
           ...post,
@@ -120,7 +120,7 @@ export default function HomeScreen() {
               </View>
               <View style={styles.headerRight}>
                 <TouchableOpacity onPress={() => router.push("/invitation/invitations")} style={styles.headerActionIcon}>
-                 <IconSymbol name="bell" size={26} color="black" />
+                  <IconSymbol name="bell" size={26} color="black" />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.push("/create-post/camera")}>
@@ -138,11 +138,13 @@ export default function HomeScreen() {
               renderItem={({ item }) => (
                 <View style={styles.postContainer}>
                   <View style={styles.userRow}>
-                    <Image source={require('../../assets/images/gymhabit.jpg')} style={styles.avatar} />
+                    <Image source={item.userPhoto
+                      ? { uri: item.userPhoto }
+                      : require('../../assets/images/icon.png')} style={styles.avatar} />
                     <Text style={styles.username}>{item.username ?? 'Username'}</Text>
                   </View>
 
-                  <Image source={require('../../assets/images/gymhabit.jpg')} style={styles.postImage} resizeMode="cover" />
+                  <Image source={{ uri: item.postPhoto }} style={styles.postImage} resizeMode="cover" />
 
                   <View style={styles.habitSection}>
                     <View style={styles.habitRow}>
@@ -162,8 +164,8 @@ export default function HomeScreen() {
                             name={item.userDislike ? 'hand.thumbsdown.fill' : 'hand.thumbsdown'}
                             size={26}
                             color='grey'
-                          />      
-                        <Text style={styles.reactionCount}>{item.dislikes?.length ?? 0}</Text>
+                          />
+                          <Text style={styles.reactionCount}>{item.dislikes?.length ?? 0}</Text>
                         </TouchableOpacity>
                       </View>
                     </View>

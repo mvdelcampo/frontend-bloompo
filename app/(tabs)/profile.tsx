@@ -14,6 +14,7 @@ export default function ProfileScreen() {
       username: string,
       coins: number,
       photo: string,
+      photoBase64: string
     };
 
   useEffect(() => {
@@ -21,7 +22,7 @@ export default function ProfileScreen() {
         try {
           const response = await getUserData();
           setUser(response.data);
-          console.log(response.data);
+          console.log(Object.keys(response.data));
         } catch (error) {
           console.error('Error al obtener usuario:', error);
           Alert.alert('Error', 'No se pudo cargar usuario.');
@@ -34,7 +35,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
       <View style={styles.container}>
-        <Image source={require('../../assets/images/gymhabit.jpg')} style={styles.avatar} />
+        <Image source={{ uri: user?.photoBase64}} style={styles.avatar} />
 
         <Text style={styles.username}>@{user?.username}</Text>
         <Text style={styles.email}>{user?.mail}</Text>
