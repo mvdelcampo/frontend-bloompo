@@ -52,7 +52,7 @@ export default function LoginScreen() {
 				);
 				
 			}
-			 console.error("Error login:", error);
+			console.error("Error login:", error);
 		}
 	};
 

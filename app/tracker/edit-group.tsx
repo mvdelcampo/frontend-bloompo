@@ -29,13 +29,15 @@ type EditableGroup = {
 };
 
 const groupsColors = [
+	Colors.mintGreen,
+	Colors.strongBlue,
+	Colors.babyBlue,
+	Colors.lightBlue,
+	Colors.pinkCoral,
+	Colors.red,
 	Colors.strongPeach,
 	Colors.bloompoYellow,
-	Colors.mintGreen,
-	Colors.pinkCoral,
-	Colors.bloompoYellowSaturated,
-	Colors.babyBlue,
-	Colors.strongBlue,
+	//Colors.bloompoYellowSaturated,
 ];
 
 export default function EditGroupScreen() {
@@ -300,7 +302,7 @@ const styles = StyleSheet.create({
 	base: {
 		position: "relative",
 		width: "85%",
-		height: "86%",
+		height: "88%",
 		backgroundColor: Colors.wingsBloompo,
 		borderRadius: 16,
 		justifyContent: "center",
@@ -314,7 +316,11 @@ const styles = StyleSheet.create({
 	},
 	colorsRow: {
 		flexDirection: "row",
-		marginTop: 8,
+		marginTop: 2,
+		flexWrap: "wrap", // Esto permite que los elementos pasen a la siguiente línea
+		justifyContent: "center", // Centra los elementos horizontalmente
+		width: "100%", // Ocupa todo el ancho disponible
+		maxWidth: 190, // Establece un ancho máximo para forzar el salto de línea
 	},
 	colorsCircle: {
 		width: 30,
@@ -334,7 +340,7 @@ const styles = StyleSheet.create({
 		height: "8%",
 		textAlign: "center",
 		fontSize: 16,
-		marginVertical: 8,
+		marginVertical: 4,
 	},
 	label: {
 		marginBottom: 5,
@@ -350,8 +356,8 @@ const styles = StyleSheet.create({
 		padding: 6,
 		paddingHorizontal: 15,
 		margin: 12,
-		marginBottom: 20,
-				marginTop:20,
+		marginBottom: 10,
+				marginTop:10,
 
 	},
 	button2: {

@@ -17,13 +17,15 @@ import { createGroup, sendInvitation } from "../../services/api";
 import { Stack, useRouter } from "expo-router";
 
 const groupsColors = [
+	Colors.mintGreen,
+	Colors.strongBlue,
+	Colors.babyBlue,
+	Colors.lightBlue,
+	Colors.pinkCoral,
+	Colors.red,
 	Colors.strongPeach,
 	Colors.bloompoYellow,
-	Colors.mintGreen,
-	Colors.pinkCoral,
-	Colors.bloompoYellowSaturated,
-	Colors.babyBlue,
-	Colors.strongBlue,
+	//Colors.bloompoYellowSaturated,
 ];
 
 export default function CreateGroupScreen() {
@@ -64,7 +66,7 @@ export default function CreateGroupScreen() {
 			const response = await createGroup(groupData);
 			if (response.status == 201) {
 				console.log("Grupo creado:", response.data);
-				
+
 				const groupIdCreated = response.data._id;
 
 				for (let i = 0; i < friends.length; i++) {
@@ -95,88 +97,98 @@ export default function CreateGroupScreen() {
 
 	return (
 		<>
-		<Stack.Screen options={{ title: 'Crear grupo', headerShown: true, headerTintColor: 'black', headerBackTitle: 'Atrás', }} />
-		<SafeAreaView style={styles.safeArea}>
-			<View style={styles.container}>
-				<Text style={styles.title}>Crear grupo</Text>
-				<View style={styles.base}>
-					<Text style={styles.label}>Nombre:</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="Mi grupo"
-						value={groupName}
-						onChangeText={setGroupName}
-					/>
-					<Text style={styles.label}>Elige un color:</Text>
+			<Stack.Screen
+				options={{
+					title: "Crear grupo",
+					headerShown: true,
+					headerTintColor: "black",
+					headerBackTitle: "Atrás",
+				}}
+			/>
+			<SafeAreaView style={styles.safeArea}>
+				<View style={styles.container}>
+					<Text style={styles.title}>Crear grupo</Text>
+					<View style={styles.base}>
+						<Text style={styles.label}>Nombre:</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Mi grupo"
+							value={groupName}
+							onChangeText={setGroupName}
+						/>
+						<Text style={styles.label}>Elige un color:</Text>
 
-					<View style={styles.colorsRow}>
-						{groupsColors.map((color, index) => (
-							<TouchableOpacity
-								key={index}
-								style={[
-									styles.colorsCircle,
-									{ backgroundColor: color },
-									color === selectedColor &&
-										styles.selectedColorCircle,
-								]}
-								onPress={() => {
-									setSelectedColor(color);
-								}}
-							/>
-						))}
-					</View>
+						<View style={styles.colorsRow}>
+							{groupsColors.map((color, index) => (
+								<TouchableOpacity
+									key={index}
+									style={[
+										styles.colorsCircle,
+										{ backgroundColor: color },
+										color === selectedColor &&
+											styles.selectedColorCircle,
+									]}
+									onPress={() => {
+										setSelectedColor(color);
+									}}
+								/>
+							))}
+						</View>
 
-					<Text style={styles.label}>¡Agrega amigos!</Text>
+						<Text style={styles.label}>¡Agrega amigos!</Text>
 
-					<View style={styles.emailInputContainer}>
-						<View style={styles.tagsContainer}>
-							{friends.map((friend, index) => (
-								<View key={index} style={styles.tag}>
-									<Text style={styles.tagText}>{friend}</Text>
-									<TouchableOpacity
-										onPress={() => removeFriend(friend)}
-									>
-										<Text style={styles.tagRemove}>X</Text>
+						<View style={styles.emailInputContainer}>
+							<View style={styles.tagsContainer}>
+								{friends.map((friend, index) => (
+									<View key={index} style={styles.tag}>
+										<Text style={styles.tagText}>
+											{friend}
+										</Text>
+										<TouchableOpacity
+											onPress={() => removeFriend(friend)}
+										>
+											<Text style={styles.tagRemove}>
+												X
+											</Text>
+										</TouchableOpacity>
+									</View>
+								))}
+								<View style={styles.inputWithButton}>
+									<TextInput
+										placeholder="Escribe su correo electrónico"
+										value={email}
+										onChangeText={setEmail}
+										onSubmitEditing={addFriend}
+										style={styles.tagInput}
+										keyboardType="email-address"
+										autoCapitalize="none"
+									/>
+									<TouchableOpacity onPress={addFriend}>
+										<Text style={styles.addSign}>+</Text>
 									</TouchableOpacity>
 								</View>
-							))}
-							<View style={styles.inputWithButton}>
-								<TextInput
-									placeholder="Escribe su correo electrónico"
-									value={email}
-									onChangeText={setEmail}
-									onSubmitEditing={addFriend}
-									style={styles.tagInput}
-									keyboardType="email-address"
-									autoCapitalize="none"
-								/>
-								<TouchableOpacity onPress={addFriend}>
-									<Text style={styles.addSign}>+</Text>
-								</TouchableOpacity>
 							</View>
 						</View>
+
+						<Text style={styles.label}>
+							Nombre de la mascota grupal:
+						</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Milo"
+							value={petName}
+							onChangeText={setPetName}
+						/>
+
+						<TouchableOpacity
+							style={styles.button1}
+							onPress={handleSaveGroup}
+						>
+							<Text style={styles.buttonText}>Crear</Text>
+						</TouchableOpacity>
 					</View>
-
-					<Text style={styles.label}>
-						Nombre de la mascota grupal:
-					</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="Milo"
-						value={petName}
-						onChangeText={setPetName}
-					/>
-
-					<TouchableOpacity
-						style={styles.button1}
-						onPress={handleSaveGroup}
-					>
-						<Text style={styles.buttonText}>Crear</Text>
-					</TouchableOpacity>
 				</View>
-			</View>
 			</SafeAreaView>
-			
 		</>
 	);
 }
@@ -231,6 +243,10 @@ const styles = StyleSheet.create({
 	colorsRow: {
 		flexDirection: "row",
 		marginTop: 8,
+		flexWrap: "wrap", // Esto permite que los elementos pasen a la siguiente línea
+		justifyContent: "center", // Centra los elementos horizontalmente
+		width: "100%", // Ocupa todo el ancho disponible
+		maxWidth: 190, // Establece un ancho máximo para forzar el salto de línea
 	},
 	colorsCircle: {
 		width: 30,
@@ -267,7 +283,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 15,
 		margin: 12,
 		marginBottom: 15,
-		marginTop:20,
+		marginTop: 20,
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,
