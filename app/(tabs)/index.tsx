@@ -37,6 +37,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await SecureStore.getItemAsync('userId');
+      console.log(id);
       setUserId(id);
     };
     fetchUserId();
@@ -70,12 +71,24 @@ export default function HomeScreen() {
         const response = await getFeedPosts();
         const data = response.data;
 
-        //console.log(response.data);
+        if (!Array.isArray(data) || data.length === 0) {
+        setPosts([]);
+        return;
+      }
         console.log(Object.keys(response.data[0]));
         const mapped = data.map((post: any, index: number) => ({
           id: `${post.username}-${post.postDate}-${index}`,
-          ownerUserId: post._id,
-          ...post,
+          ownerUserId: post.id,
+          username: post.username,
+          userPhoto: post.userPhoto,
+          postPhoto: post.postPhoto,
+          habitName: post.habitName,
+          habitIcon: post.habitIcon,  
+          postDate: post.postDate,
+          likes: post.likes,
+          dislikes: post.dislikes,
+          userLike: post.userLike,
+          userDislike: post.userDislike
         }));
 
         setPosts(mapped);
@@ -176,27 +189,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Condicional para loading */}
-        {loading ? (
-          <View style={styles.centered}>
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" />
-              <Animated.Image
-                source={require('../../assets/images/bloompo-cowboy.png')}
-                style={[styles.rotatingImage, { transform: [{ rotate: spin }] }]}
-              />
-            </View>
-          </View>
-        ) : error ? (
-          // Condicional para error
-          <View style={styles.centered}>
-            <Text>{error}</Text>
-          </View>
-        ) : (
-          // Vista principal cuando todo está bien
-          <>
-            {/* Header */}
-            <View style={styles.header}>
+         <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <Text style={styles.headerTitle}>BLOOMPO</Text>
                 <Image
@@ -215,7 +208,41 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
             </View>
+        {/* Condicional para loading */}
+        {loading ? (
+          <View style={styles.centered}>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" />
+              <Animated.Image
+                source={require('../../assets/images/bloompo-cowboy.png')}
+                style={[styles.rotatingImage, { transform: [{ rotate: spin }] }]}
+              />
+            </View>
+          </View>
+        ) : error ? (
+          // Condicional para error
+          <View style={styles.centered}>
+            <Text>{error}</Text>
+          </View>
+        ) : posts.length === 0 ? (
+          // Condicional para no hay posts
+          <View style={styles.centered}>
+            <Text style={styles.emptyText}>¡Ups! No hay posts nuevas :(</Text>
+            <Image
+              source={require('../../assets/images/bloompo-sad.png')}
+              style={styles.emptyImage}
+              resizeMode="contain"
+            />
+          </View>
+        ) :
+        
+        (
+          // Vista principal cuando todo está bien
+          <>
+            {/* Header */}
+           
 
+            
             {/* Feed */}
             <FlatList
               data={posts}
@@ -229,7 +256,7 @@ export default function HomeScreen() {
                       ? { uri: item.userPhoto }
                       : require('../../assets/images/avatar_placeholder.png')} style={styles.avatar} />
                     <Text style={styles.username}>{item.username ?? 'Username'}</Text>
-                    {'6854c675209ed952fb3f7a69' === userId && (
+                    {item.ownerUserId === userId && (
                       <TouchableOpacity
                         style={styles.moreButton}
                         onPress={() => {
@@ -450,5 +477,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 80,
     height: 80,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '500',
+    marginBottom: 16,
+    textAlign: 'center',
+    color: '#444',
+  },
+  emptyImage: {
+    width: 150,
+    height: 150,
+    opacity: 0.7,
   },
 });
