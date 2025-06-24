@@ -29,8 +29,8 @@ export default function LoginScreen() {
 			if (response.status == 200) {
 				console.log("Login exitoso:", response.data.message);
 
-				console.log("token: ", response.data.token);
-				console.log("userId: ", response.data.userId);
+				//console.log("token: ", response.data.token);
+				//console.log("userId: ", response.data.userId);
 
 				await storeToken(response.data.token);
 				await storeData(response.data.userId);
@@ -52,7 +52,7 @@ export default function LoginScreen() {
 				);
 				
 			}
-			console.error("Error login:", error);
+			//console.error("Error login:", error);
 		}
 	};
 
@@ -214,6 +214,11 @@ const styles = StyleSheet.create({
 		width: "70%",
 		textAlign: "center",
 		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 5, // sombra para android
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,
@@ -222,6 +227,11 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		justifyContent: "center",
 		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 5, // sombra para android
 	},
 	buttonText: {
 		color: Colors.darkGrey,

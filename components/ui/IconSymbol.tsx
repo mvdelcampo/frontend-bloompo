@@ -31,6 +31,7 @@ const MAPPING = {
   'storefront': 'store',
   'plus': 'add',
   'ellipsis': 'more-horiz',
+  'trash': 'delete',
 
 } as IconMapping;
 

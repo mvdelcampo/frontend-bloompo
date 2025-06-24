@@ -139,7 +139,7 @@ export default function CreateHabitScreen() {
 					}
 				}
 				Alert.alert("Éxito", "Hábito creado exitosamente!");
-				router.replace("/(tabs)/tracker");
+				router.back();
 			}
 		} catch (error) {
 			// console.error("Error al crear hábito:", error);
@@ -369,6 +369,11 @@ const styles = StyleSheet.create({
 		margin: 12,
 		marginTop: 12,
 		marginBottom: 15,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 2,
+		elevation: 2, // sombra para android
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,
@@ -492,7 +497,7 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0,
 	},
 	selectedIcon: {
-		borderWidth: 4,
+		borderWidth: 2,
 		borderColor: Colors.mediumGrey,
 	},
 	groupName: {

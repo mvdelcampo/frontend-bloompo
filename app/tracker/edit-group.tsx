@@ -18,8 +18,10 @@ import {
 	editGroup,
 	sendInvitation,
 	deleteFriend,
+	deleteGroup
 } from "../../services/api";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 type EditableGroup = {
 	name: string;
@@ -100,6 +102,16 @@ export default function EditGroupScreen() {
 		setFriends(friends.filter((f) => f !== email));
 	};
 
+	const handleDeleteGroup = async () => {
+		try {
+			await deleteGroup({ groupId: selectedGroupId });
+			router.back();
+		} catch (error) {
+			console.log("Ha ocurrido un error eliminando el grupo");
+			Alert.alert("Error", "Ocurrió un error al eliminar el grupo. Vuelve a intentarlo")
+		}
+	}
+
 	const handleSaveGroup = async () => {
 		if (!groupName || !petName || !selectedColor) {
 			Alert.alert(
@@ -156,7 +168,7 @@ export default function EditGroupScreen() {
 					}
 				}
 
-				router.replace("/(tabs)/tracker");
+				router.back();
 			} else {
 				Alert.alert(
 					"Error",
@@ -180,7 +192,37 @@ export default function EditGroupScreen() {
 			/>
 			<SafeAreaView style={styles.safeArea}>
 				<View style={styles.container}>
-					<Text style={styles.title}>Editar grupo</Text>
+					<View style={styles.header}>
+						<Text style={styles.title}>Editar grupo</Text>
+						<TouchableOpacity
+							style={styles.deleteIcon}
+							onPress={() => {
+								Alert.alert(
+									'¿Estás seguro que querés eliminar este grupo?',
+									'Esta acción no se puede deshacer.',
+									[
+										{
+											text: 'Cancelar',
+											style: 'cancel',
+										},
+										{
+											text: 'Eliminar',
+											onPress: () => handleDeleteGroup(),
+											style: 'destructive',
+										},
+									],
+									{ cancelable: true }
+								);
+							}}
+						>
+							<IconSymbol
+								name="trash"
+								size={26}
+								color={Colors.darkGrey}
+							/>
+						</TouchableOpacity>
+					</View>
+
 					<View style={styles.base}>
 						<Text style={styles.label}>Nombre:</Text>
 						<TextInput
@@ -198,7 +240,7 @@ export default function EditGroupScreen() {
 										styles.colorsCircle,
 										{ backgroundColor: color },
 										color === selectedColor &&
-											styles.selectedColorCircle,
+										styles.selectedColorCircle,
 									]}
 									onPress={() => {
 										setSelectedColor(color);
@@ -260,6 +302,7 @@ export default function EditGroupScreen() {
 								Guardar
 							</Text>
 						</TouchableOpacity>
+
 					</View>
 				</View>
 			</SafeAreaView>
@@ -282,7 +325,9 @@ const styles = StyleSheet.create({
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "space-between",
+		justifyContent: "center", // centra el título
+		width: "100%",
+		position: "relative",
 	},
 	title: {
 		color: Colors.darkGrey,
@@ -301,12 +346,12 @@ const styles = StyleSheet.create({
 
 	base: {
 		position: "relative",
-		width: "85%",
+		width: "90%",
 		height: "88%",
 		backgroundColor: Colors.wingsBloompo,
 		borderRadius: 16,
 		justifyContent: "center",
-		paddingTop: 10,
+		paddingTop: 5,
 		alignItems: "center",
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
@@ -357,7 +402,12 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 15,
 		margin: 12,
 		marginBottom: 10,
-				marginTop:10,
+		marginTop: 10,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 2,
+		elevation: 2, // sombra para android
 
 	},
 	button2: {
@@ -463,5 +513,11 @@ const styles = StyleSheet.create({
 	selectedColorCircle: {
 		borderWidth: 4,
 		borderColor: Colors.darkGrey,
+	},
+	deleteIcon: {
+		position: "absolute",
+		top: 15,
+		right: 25,
+		zIndex: 10,
 	},
 });

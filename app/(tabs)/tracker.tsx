@@ -1,4 +1,3 @@
-//import { Image } from "expo-image";
 import { Image } from "react-native";
 import {
 	Platform,
@@ -9,13 +8,16 @@ import {
 	ScrollView,
 	TouchableOpacity,
 	FlatList,
+	Alert
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import {
 	getUserGroups,
 	getGroupRanking,
 	getHabitsFromGroup,
 	getHabitsFromUser,
+	deleteHabit
 } from "../../services/api";
 
 import { Collapsible } from "@/components/Collapsible";
@@ -92,8 +94,25 @@ export default function TrackerScreen() {
 		setSelectedGroupId(groupId);
 	};
 
+	const handleDeleteHabit = async (habitName: string) => {
+		try {
+			await deleteHabit({ habitName: habitName });
+			try {
+				const responseHabits = await getHabitsFromUser();
+				//console.log(responseHabits.data);
+				setMyHabits(responseHabits.data.habits || []);
+			} catch (error) {
+				console.error("Error al recargar mis habitos:", error);
+			}
+		} catch (error) {
+			console.log("Ha ocurrido un error eliminando el hábito");
+			Alert.alert("Error", "Ocurrió un error al eliminar el hábito. Vuelve a intentarlo")
+		}
+	}
+
 	// Cargar grupos y hábitos al iniciar
-	useEffect(() => {
+	useFocusEffect(
+		useCallback(() => {
 		const fetchData = async () => {
 			try {
 				const responseGroups = await getUserGroups();
@@ -147,7 +166,8 @@ export default function TrackerScreen() {
 			}
 		};
 		fetchData();
-	}, [selectedGroupId]);
+		}, [selectedGroupId])
+	);
 
 	return (
 		<>
@@ -207,7 +227,7 @@ export default function TrackerScreen() {
 												backgroundColor: item.color,
 											},
 											item.id === selectedGroupId &&
-												styles.selectedBox,
+											styles.selectedBox,
 										]}
 									>
 										<Text style={styles.groupName}>
@@ -240,8 +260,8 @@ export default function TrackerScreen() {
 												source={
 													item.photoInBase64
 														? {
-																uri: item.photoInBase64,
-														  }
+															uri: item.photoInBase64,
+														}
 														: require("../../assets/icons/bloompo-icon.png")
 												}
 												style={styles.avatar}
@@ -288,7 +308,7 @@ export default function TrackerScreen() {
 												<Image
 													source={
 														icons[
-															item.icon as keyof typeof icons
+														item.icon as keyof typeof icons
 														]
 													}
 													style={styles.habitIcon}
@@ -297,6 +317,33 @@ export default function TrackerScreen() {
 												<Text style={styles.habitTitle}>
 													{item.name}
 												</Text>
+												<TouchableOpacity
+													style={styles.headerRight}
+													onPress={() => {
+														Alert.alert(
+															'¿Estás seguro que querés eliminar este hábito?',
+															'Esta acción no se puede deshacer.',
+															[
+																{
+																	text: 'Cancelar',
+																	style: 'cancel',
+																},
+																{
+																	text: 'Eliminar',
+																	onPress: () => handleDeleteHabit(item.name),
+																	style: 'destructive',
+																},
+															],
+															{ cancelable: true }
+														);
+													}}
+												>
+													<IconSymbol
+														name="trash"
+														size={26}
+														color= {Colors.mediumGrey}
+													/>
+												</TouchableOpacity>
 											</View>
 											<View
 												style={styles.habitCompletion}
@@ -330,10 +377,10 @@ export default function TrackerScreen() {
 																			{
 																				backgroundColor:
 																					item.weekly_counter &&
-																					item
-																						.weekly_counter[
+																						item
+																							.weekly_counter[
 																						index
-																					] ===
+																						] ===
 																						1
 																						? Colors.strongPeach
 																						: Colors.lightGrey,
@@ -386,8 +433,8 @@ export default function TrackerScreen() {
 													source={
 														item.photoInBase64
 															? {
-																	uri: item.photoInBase64,
-															  }
+																uri: item.photoInBase64,
+															}
 															: require("../../assets/icons/bloompo-icon.png")
 													}
 													style={styles.avatar}
@@ -395,7 +442,7 @@ export default function TrackerScreen() {
 												<Image
 													source={
 														icons[
-															item.icon as keyof typeof icons
+														item.icon as keyof typeof icons
 														]
 													}
 													style={styles.habitIcon}
@@ -437,10 +484,10 @@ export default function TrackerScreen() {
 																			{
 																				backgroundColor:
 																					item.weekly_counter &&
-																					item
-																						.weekly_counter[
+																						item
+																							.weekly_counter[
 																						index
-																					] ===
+																						] ===
 																						1
 																						? Colors.strongPeach
 																						: Colors.lightGrey,
@@ -536,7 +583,8 @@ const styles = StyleSheet.create({
 	headerRight: {
 		flexDirection: "row",
 		alignItems: "flex-end",
-		marginHorizontal: 10,
+		marginHorizontal: 15,
+		justifyContent: "flex-end"
 	},
 	headerActionIcon: {
 		marginRight: 12,
@@ -550,7 +598,6 @@ const styles = StyleSheet.create({
 	habitIcon: {
 		width: 36,
 		height: 36,
-		marginLeft: 10,
 		marginRight: 10,
 	},
 	header: {
@@ -636,6 +683,7 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: "bold",
 		marginBottom: 4,
+		flex: 1
 	},
 	daysRow: {
 		flexDirection: "row",

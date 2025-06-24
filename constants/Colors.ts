@@ -29,7 +29,7 @@ export const Colors = {
   mediumGrey: '#6B7280',
   darkGrey: '#1F2937',
   lightBlue: '#DDD5F5',
-  mintGreen: '#A8E6CF', 
+  mintGreen: '#BECCD8', 
   lightPeach: '#FFF7ED',
   strongPeach: '#FFD8B1', 
   pinkCoral: '#F8BBD0',
@@ -39,6 +39,6 @@ export const Colors = {
    babyBlue: '#D6EAF8',  
   backgroundBloompo: '#FDF2DA',
   lettersBloompo: '#5F3820',
-   wingsBloompo: '#D4EFED',
+   wingsBloompo: '#C5DFE0',
   red: '#FFB3B3',
 };

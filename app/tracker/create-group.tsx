@@ -83,7 +83,7 @@ export default function CreateGroupScreen() {
 					}
 				}
 				Alert.alert("Éxito", "¡Grupo creado exitosamente!");
-				router.replace("/(tabs)/tracker");
+				router.back();
 			} else {
 				Alert.alert(
 					"Error",
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
 
 	base: {
 		position: "relative",
-		width: "85%",
+		width: "90%",
 		height: "86%",
 		backgroundColor: Colors.wingsBloompo,
 		borderRadius: 16,
@@ -284,6 +284,11 @@ const styles = StyleSheet.create({
 		margin: 12,
 		marginBottom: 15,
 		marginTop: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 2,
+		elevation: 2, // sombra para android
 	},
 	button2: {
 		backgroundColor: Colors.bloompoYellow,

@@ -7,7 +7,7 @@ const API_URL = Constants?.manifest2?.extra?.apiUrl
   ?? Constants?.expoConfig?.extra?.apiUrl;
 
 const API = axios.create({
-  baseURL:  API_URL,
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export const login = async (userData: {
   return await API.post('/user/login', userData)
   // console.log('userData', userData)
   // console.log('API_URL')
- };
+};
 
 export const register = async (userData: {
   mail: string;
@@ -48,7 +48,7 @@ export const register = async (userData: {
   username: string;
 }) => { return await API.post('/user/create', userData) };
 
-// ---------- Login Add Photo ----------------------
+// ---------- Login Add Photo and Profile ----------------------
 
 export const editUser = async (formData: FormData) => {
   return await API.post('/user/edit', formData, {
@@ -62,87 +62,101 @@ export const editUser = async (formData: FormData) => {
 // ---------- Pantalla Tracker ----------------------
 
 export const createGroup = async (data: {
-	name: string;
-	color: string;
-	pet_name: string;
+  name: string;
+  color: string;
+  pet_name: string;
 }) => {
-	return await API.post("/group/create", data);
+  return await API.post("/group/create", data);
 };
 
 export const getGroup = async (groupId: string) => {
-	return await API.get(`/group/${groupId}`);
+  return await API.get(`/group/${groupId}`);
 };
 
 export const editGroup = async (data: {
-	_id: string;
-	name: string;
-	color: string;
-	pet_name: string;
+  _id: string;
+  name: string;
+  color: string;
+  pet_name: string;
 }) => {
-	return await API.post("/group/edit", data);
+  return await API.post("/group/edit", data);
+};
+
+export const deleteGroup = async (data: {
+  groupId: string;
+}) => {
+  return await API.delete("/group/deleteGroup", {
+		data, 
+	});
 };
 
 export const createHabit = async (data: {
-	habit: {
-		name: string;
-		icon: string;
-		color: string;
-		frequency: number;
-	};
+  habit: {
+    name: string;
+    icon: string;
+    color: string;
+    frequency: number;
+  };
 }) => {
-	return await API.post("/user/createHabit", data);
+  return await API.post("/user/createHabit", data);
+};
+
+export const deleteHabit = async (data: {
+  habitName: string;
+}) => {
+  return await API.delete("/user/deleteHabit", {
+		data, 
+	});
 };
 
 export const addGroupToHabit = async (data: {
   habitName: string,
   newGroupId: string
 }) => {
-	return await API.post("/user/addGroupToHabit", data);
+  return await API.post("/user/addGroupToHabit", data);
 };
 
 export const sendInvitation = async (data: {
-	friendEmail: string;
-	groupId: string;
+  friendEmail: string;
+  groupId: string;
 }) => {
-	return await API.post("/user/addPendingGroup", data);
+  return await API.post("/user/addPendingGroup", data);
 };
 
 export const deleteFriend = async (data: {
-	friendEmail: string;
-	groupId: string;
+  friendEmail: string;
+  groupId: string;
 }) => {
-	return await API.post("/user/deleteFriendFromGroup", data);
+  return await API.post("/user/deleteFriendFromGroup", data);
 };
 
 export const getUserGroups = async () => {
-	return await API.get(`/user/me/groups`);
+  return await API.get(`/user/me/groups`);
 };
 
 export const getGroupRanking = async (groupId: string) => {
-	return await API.get(`/group/${groupId}/getGroupRanking`);
+  return await API.get(`/group/${groupId}/getGroupRanking`);
 };
 
 export const getHabitsFromGroup = async (groupId: string) => {
   return await API.get(`/group/${groupId}/getHabits`);
-  
+
 };
 export const getHabitsFromUser = async () => {
-	return await API.get(`/user/me/habits`);
+  return await API.get(`/user/me/habits`);
 };
 
 
 // ---------- Pantalla Home ----------------------
 
 // Obtener posts para el feed
-export const getFeedPosts = async () => 
-  {return await API.get(`/user/me/getFeedPosts`)};
+export const getFeedPosts = async () => { return await API.get(`/user/me/getFeedPosts`) };
 
 // Borrar foto
 export const deletePost = async (data: {
   habitName: string;
   postDate: string;
-}) => 
-  {return await API.delete('/user/deletePost', { data })};
+}) => { return await API.delete('/user/deletePost', { data }) };
 
 // Dar me gusta/no me gusta a foto
 export const addLikes = async (dataPost: {
@@ -151,18 +165,16 @@ export const addLikes = async (dataPost: {
   postDate: string;
   like: boolean;
   dislike: boolean;
-}) => {return await API.post('/user/addLikes', dataPost)};
+}) => { return await API.post('/user/addLikes', dataPost) };
 
 // Obtener invitaciones pendientes
-export const getUserInvitations = async () =>
-  {return await API.get(`/user/me/pendingGroups`)};
+export const getUserInvitations = async () => { return await API.get(`/user/me/pendingGroups`) };
 
 // Aceptar/Rechazar invitacion pendiente
 export const acceptInvitation = async (data: {
   groupId: string;
   accepted: boolean;
-}) => 
-  {return await API.post('/user/acceptPendingGroup', data)};
+}) => { return await API.post('/user/acceptPendingGroup', data) };
 
 // Crear post
 export const createPost = async (formData: FormData) => {
@@ -175,26 +187,16 @@ export const createPost = async (formData: FormData) => {
 };
 
 // Obtener habitos del usuario
-export const getUserHabits = async () =>
- {return await API.get(`/user/me/habits`)};
+export const getUserHabits = async () => { return await API.get(`/user/me/habits`) };
 
 // ---------- Pantalla Mascota ----------------------
 
 // Obtener mascotas de todos los grupos a los que pertenece un usuario
-export const getUserPets = async () =>
-  {return await API.get(`/user/me/pets`)};
+export const getUserPets = async () => { return await API.get(`/user/me/pets`) };
 
 // Obtener puntos (o monedas) del usuario
-export const getUserScore = async () =>
-  {return await API.get(`/user/me/getUserScore`)};
+export const getUserScore = async () => { return await API.get(`/user/me/getUserScore`) };
 
 // ------------ Pantalla Usuario --------------------
 
-export const getUserData = async () =>
-  {return await API.get(`/user/me`)};
-
-
-
-
-
-
+export const getUserData = async () => { return await API.get(`/user/me`) };
