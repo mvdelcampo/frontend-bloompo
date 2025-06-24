@@ -48,6 +48,16 @@ export const register = async (userData: {
   username: string;
 }) => { return await API.post('/user/create', userData) };
 
+// ---------- Login Add Photo ----------------------
+
+export const editUser = async (formData: FormData) => {
+  return await API.post('/user/edit', formData, {
+    timeout: 40000,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
 
 // ---------- Pantalla Tracker ----------------------
 

@@ -1,4 +1,5 @@
-import { Image } from "expo-image";
+//import { Image } from "expo-image";
+import { Image } from "react-native";
 import {
 	Platform,
 	SafeAreaView,
@@ -47,6 +48,7 @@ type Group = {
 type RankingItem = {
 	username: string;
 	photo: string;
+	photoInBase64: string;
 	score: number;
 };
 
@@ -57,6 +59,7 @@ type Habit = {
 	weekly_counter: number[];
 	username: string;
 	photo: string;
+	photoInBase64: string;
 };
 
 type MyHabit = {
@@ -124,15 +127,18 @@ export default function TrackerScreen() {
 					);
 					//console.log(responseHabits.data);
 					const flatHabits = responseHabits.data.flatMap(
-						(user: any) =>
-							user.habits.map((habit: any) => ({
+						(user: any) => {
+							//console.log("Foto del usuario:", user.photoInBase64);
+							return user.habits.map((habit: any) => ({
 								name: habit.name,
 								icon: habit.icon,
 								frequency: habit.frequency,
 								weekly_counter: habit.weekly_counter,
 								username: user.username,
 								photo: user.photo,
-							}))
+								photoInBase64: user.photoInBase64,
+							}));
+						}
 					);
 					setHabits(flatHabits || []);
 				} catch (error) {
@@ -232,8 +238,10 @@ export default function TrackerScreen() {
 											</Text>
 											<Image
 												source={
-													item.photo
-														? item.photo
+													item.photoInBase64
+														? {
+																uri: item.photoInBase64,
+														  }
 														: require("../../assets/icons/bloompo-icon.png")
 												}
 												style={styles.avatar}
@@ -276,8 +284,8 @@ export default function TrackerScreen() {
 									}
 									renderItem={({ item }) => (
 										<View style={styles.card}>
-                      <View style={styles.habitHeader}>
-                        <Image
+											<View style={styles.habitHeader}>
+												<Image
 													source={
 														icons[
 															item.icon as keyof typeof icons
@@ -289,7 +297,6 @@ export default function TrackerScreen() {
 												<Text style={styles.habitTitle}>
 													{item.name}
 												</Text>
-												
 											</View>
 											<View
 												style={styles.habitCompletion}
@@ -376,10 +383,16 @@ export default function TrackerScreen() {
 										<View style={styles.card}>
 											<View style={styles.habitHeader}>
 												<Image
-													source={item.photo}
+													source={
+														item.photoInBase64
+															? {
+																	uri: item.photoInBase64,
+															  }
+															: require("../../assets/icons/bloompo-icon.png")
+													}
 													style={styles.avatar}
-                        />
-                        <Image
+												/>
+												<Image
 													source={
 														icons[
 															item.icon as keyof typeof icons
@@ -390,8 +403,7 @@ export default function TrackerScreen() {
 												/>
 												<Text style={styles.habitTitle}>
 													{item.name}
-                        </Text>
-                        
+												</Text>
 											</View>
 											<View
 												style={styles.habitCompletion}
@@ -535,11 +547,11 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		marginRight: 5,
 	},
-  habitIcon: {
+	habitIcon: {
 		width: 36,
-    height: 36,
-    marginLeft: 10,
-    marginRight: 10,
+		height: 36,
+		marginLeft: 10,
+		marginRight: 10,
 	},
 	header: {
 		flexDirection: "row",

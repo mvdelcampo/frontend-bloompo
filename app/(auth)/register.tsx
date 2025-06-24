@@ -16,6 +16,7 @@ import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import { register } from "../../services/api";
 import { useState } from "react";
+import { storeData, storeToken } from "../_layout";
 
 export default function RegisterScreen() {
 	const router = useRouter();
@@ -27,6 +28,9 @@ export default function RegisterScreen() {
 		try {
 			const response = await register({ mail, password, username });
 			if (response.status == 201) {
+				await storeToken(response.data.token);
+				await storeData(response.data.userId);
+				
 				router.push("/(auth)/add-photo");
 				Alert.alert("Éxito", "Cuenta creada exitosamente.");
 			} else if (response.status == 400) {

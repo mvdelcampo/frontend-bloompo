@@ -13,6 +13,8 @@ import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
+import { editUser } from "@/services/api";
+import * as FileSystem from "expo-file-system";
 
 export default function AddPhotoScreen() {
 	const router = useRouter();
@@ -49,6 +51,32 @@ export default function AddPhotoScreen() {
 		}
 	};
 
+	const handleUploadPhoto = async () => {
+		if (!selectedImage) return;
+
+		const uriParts = selectedImage.split(".");
+		const fileType = uriParts[uriParts.length - 1];
+
+		const formData = new FormData();
+		formData.append("photo", {
+			uri: selectedImage,
+			name: `photo.${fileType}`,
+			type: `image/${fileType}`,
+		} as any);
+
+		try {
+			const response = await editUser(formData);
+			if (response.status !== 200) {
+				throw new Error("Error al actualizar el usuario");
+			}
+			//console.log("Usuario actualizado:", response.data);
+			router.replace("/(tabs)");
+		} catch (err) {
+			console.error("Error al subir foto:", err);
+			alert("Hubo un problema al subir la foto.");
+		}
+	};
+
 	return (
 		<SafeAreaView style={styles.safeArea}>
 			<View style={styles.container}>
@@ -80,20 +108,19 @@ export default function AddPhotoScreen() {
 						</TouchableOpacity>
 					</View>
 
-                    {selectedImage && (
-                        <>
-                            <Image
-							source={{ uri: selectedImage }}
-							style={styles.image}
-                        />
-                            <TouchableOpacity
-                            style={styles.button2}
-                            onPress={() => router.replace("/(auth)/login")}
-                        >
-                            <Text style={styles.buttonText}>Continuar</Text>
-                        </TouchableOpacity>
-                        </>
-						
+					{selectedImage && (
+						<>
+							<Image
+								source={{ uri: selectedImage }}
+								style={styles.image}
+							/>
+							<TouchableOpacity
+								style={styles.button2}
+								onPress={handleUploadPhoto}
+							>
+								<Text style={styles.buttonText}>Continuar</Text>
+							</TouchableOpacity>
+						</>
 					)}
 					<TouchableOpacity
 						style={styles.button1}
@@ -145,36 +172,32 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		fontFamily: "Fredoka",
 		alignContent: "center",
-        textAlign: "center",
-        margin: 20,
-        marginTop: 50,
-        
+		textAlign: "center",
+		margin: 20,
+		marginTop: 50,
 	},
 	subtitle: {
 		color: Colors.lettersBloompo,
 		fontSize: 14,
 		fontFamily: "Fredoka",
-        textAlign: "center",
-
+		textAlign: "center",
 	},
 	image: {
-
-        width: 120,
-        height: 120,
-        borderRadius: 10,
-        margin: 10,
-
+		width: 120,
+		height: 120,
+		borderRadius: 10,
+		margin: 10,
 	},
-    base: {
-        flexGrow: 1, // crece con el contenido
+	base: {
+		flexGrow: 1, // crece con el contenido
 		position: "relative",
 		width: "85%",
 		minHeight: 250, // altura mínima para cuando no hay imagen
-	    maxHeight: 325, // limitar para que no se pase
+		maxHeight: 325, // limitar para que no se pase
 		backgroundColor: Colors.wingsBloompo,
 		borderRadius: 16,
-        padding: 16,
-	    justifyContent: "space-evenly", // mejor distribución
+		padding: 16,
+		justifyContent: "space-evenly", // mejor distribución
 		alignItems: "center",
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
