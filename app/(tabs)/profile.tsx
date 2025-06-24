@@ -35,8 +35,9 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
       <View style={styles.container}>
-        <Image source={{ uri: user?.photoBase64}} style={styles.avatar} />
-
+        <Image source={user?.photoBase64 ? 
+          {uri: user?.photoBase64} 
+          : require('../../assets/images/avatar_placeholder.png')} style={styles.avatar} />
         <Text style={styles.username}>@{user?.username}</Text>
         <Text style={styles.email}>{user?.mail}</Text>
 

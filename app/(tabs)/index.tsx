@@ -1,9 +1,9 @@
-import { Alert, Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
+import { Animated, Easing, Alert, Platform, StyleSheet, Text, View, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from 'react';
-import { getFeedPosts } from '@/services/api';
+import { getFeedPosts, addLikes } from '@/services/api';
 import * as SecureStore from 'expo-secure-store';
 import { getHabitIcon } from '@/constants/habitIcons';
 
@@ -14,9 +14,13 @@ export default function HomeScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   type Post = {
     id: string;
+    ownerUserId: string;
     username: string;
     userPhoto: any;
     postPhoto: string;
@@ -29,6 +33,37 @@ export default function HomeScreen() {
     userDislike: boolean;
   };
 
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await SecureStore.getItemAsync('userId');
+      setUserId(id);
+    };
+    fetchUserId();
+  }, []);
+
+  const rotateAnim = useState(new Animated.Value(0))[0];
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  useEffect(() => {
+    const spin = Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    if (loading) {
+      spin.start();
+    } else {
+      spin.stop();
+    }
+  }, [loading]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -36,8 +71,10 @@ export default function HomeScreen() {
         const data = response.data;
 
         //console.log(response.data);
+        console.log(Object.keys(response.data[0]));
         const mapped = data.map((post: any, index: number) => ({
           id: `${post.username}-${post.postDate}-${index}`,
+          ownerUserId: post._id,
           ...post,
         }));
 
@@ -54,7 +91,11 @@ export default function HomeScreen() {
     fetchData();
   }, []);
 
-  const handleLike = (postId: string) => {
+  const handleLike = async (postId: string) => {
+    if (!userId) {
+      Alert.alert("Error", "No se encontró el usuario.");
+      return;
+    }
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
@@ -63,16 +104,41 @@ export default function HomeScreen() {
             userLike: !post.userLike,
             userDislike: false,
             likes: post.userLike
-              ? post.likes?.filter((u) => u !== '1')
-              : [...(post.likes ?? []), '1'],
-            dislikes: post.dislikes?.filter((u) => u !== '1'),
+              ? post.likes?.filter((u) => u !== userId)
+              : [...(post.likes ?? []), userId],
+            dislikes: post.dislikes?.filter((u) => u !== userId),
           }
           : post
       )
     );
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    try {
+      console.log({
+        postOwnerUserId: post.ownerUserId,
+        habitName: post.habitName,
+        postDate: post.postDate,
+        like: !post.userLike,
+        dislike: false
+      });
+      await addLikes({
+        postOwnerUserId: post.ownerUserId,
+        habitName: post.habitName,
+        postDate: post.postDate,
+        like: !post.userLike,
+        dislike: false,
+      });
+    } catch (err) {
+      console.error("Error enviando like:", err);
+      Alert.alert("Error", "No se pudo registrar el like.");
+    }
   };
 
-  const handleDislike = (postId: string) => {
+  const handleDislike = async (postId: string) => {
+    if (!userId) {
+      Alert.alert("Error", "No se encontró el usuario.");
+      return;
+    }
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
@@ -81,13 +147,28 @@ export default function HomeScreen() {
             userDislike: !post.userDislike,
             userLike: false,
             dislikes: post.userDislike
-              ? post.dislikes?.filter((u) => u !== '1')
-              : [...(post.dislikes ?? []), '1'],
-            likes: post.likes?.filter((u) => u !== '1'),
+              ? post.dislikes?.filter((u) => u !== userId)
+              : [...(post.dislikes ?? []), userId],
+            likes: post.likes?.filter((u) => u !== userId),
           }
           : post
       )
     );
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    try {
+      await addLikes({
+        postOwnerUserId: post.ownerUserId,
+        habitName: post.habitName,
+        postDate: post.postDate,
+        like: false,
+        dislike: !post.userDislike,
+      });
+    } catch (err) {
+      console.error("Error enviando dislike:", err);
+      Alert.alert("Error", "No se pudo registrar el dislike.");
+    }
   };
 
   const { top } = useSafeAreaInsets();
@@ -98,7 +179,13 @@ export default function HomeScreen() {
         {/* Condicional para loading */}
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator size="large" />
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" />
+              <Animated.Image
+                source={require('../../assets/images/bloompo-cowboy.png')}
+                style={[styles.rotatingImage, { transform: [{ rotate: spin }] }]}
+              />
+            </View>
           </View>
         ) : error ? (
           // Condicional para error
@@ -140,8 +227,19 @@ export default function HomeScreen() {
                   <View style={styles.userRow}>
                     <Image source={item.userPhoto
                       ? { uri: item.userPhoto }
-                      : require('../../assets/images/icon.png')} style={styles.avatar} />
+                      : require('../../assets/images/avatar_placeholder.png')} style={styles.avatar} />
                     <Text style={styles.username}>{item.username ?? 'Username'}</Text>
+                    {'6854c675209ed952fb3f7a69' === userId && (
+                      <TouchableOpacity
+                        style={styles.moreButton}
+                        onPress={() => {
+                          setSelectedPostId(item.id);
+                          setShowDeleteModal(true);
+                        }}
+                      >
+                        <Text style={{ fontSize: 22, marginLeft: 'auto' }}>⋮</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
 
                   <Image source={{ uri: item.postPhoto }} style={styles.postImage} resizeMode="cover" />
@@ -173,6 +271,30 @@ export default function HomeScreen() {
                 </View>
               )}
             />
+            <Modal
+              visible={showDeleteModal}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setShowDeleteModal(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                  <Text style={{ marginBottom: 16 }}>¿Eliminar este post?</Text>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                      setPosts((prev) => prev.filter(p => p.id !== selectedPostId));
+                      setShowDeleteModal(false);
+                    }}
+                  >
+                    <Text style={{ color: 'white' }}>Eliminar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setShowDeleteModal(false)}>
+                    <Text style={{ color: 'gray', marginTop: 10 }}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
           </>
         )}
       </View>
@@ -292,5 +414,41 @@ const styles = StyleSheet.create({
   reactionCount: {
     marginLeft: 4,
     fontSize: 14,
+  },
+  moreButton: {
+    marginLeft: 'auto',
+    paddingHorizontal: 8,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+
+  modalButton: {
+    backgroundColor: '#dc2626',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  rotatingImage: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
   },
 });

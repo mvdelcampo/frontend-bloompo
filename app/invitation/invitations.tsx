@@ -86,11 +86,10 @@ export default function InvitationScreen() {
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <View style={styles.invitationContainer}>
-                <Image source={typeof item.userPhoto === 'string' ? { uri: item.userPhoto } : item.userPhoto} style={styles.avatar} />
+                <Image source={require('../../assets/images/avatar_placeholder.png')} style={styles.avatar} />
 
                 <View style={styles.invitationContent}>
-                  <Text style={styles.username}>{item.username} te ha invitado</Text>
-                  <Text style={styles.groupName}>{item.groupName}</Text>
+                  <Text style={styles.username}>Te han invitado a {item.groupName}!</Text>
                 </View>
 
                 <View style={styles.iconContainer}>
