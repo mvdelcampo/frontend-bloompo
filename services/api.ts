@@ -148,7 +148,7 @@ export const deletePost = async (data: {
 export const addLikes = async (dataPost: {
   postOwnerUserId: string;
   habitName: string;
-  postDate: Date;
+  postDate: string;
   like: boolean;
   dislike: boolean;
 }) => {return await API.post('/user/addLikes', dataPost)};
