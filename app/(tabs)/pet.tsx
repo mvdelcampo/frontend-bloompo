@@ -100,10 +100,12 @@ export default function PetScreen() {
     }
 
     return (
-      <View style={[styles.petContainer, { width: screenWidth * 0.8 }]}>
-        <Image source={imageSource} style={styles.petImage} />
-        <Text style={styles.petName}>{item.petName}</Text>
-        <Text style={styles.groupName}>{item.groupName}</Text>
+      <View style={{ width: screenWidth * 0.8, alignItems: 'center' }}>
+        <View style={[styles.petContainer, { width: screenWidth }]}>
+          <Image source={imageSource} style={styles.petImage} />
+          <Text style={styles.petName}>{item.petName}</Text>
+          <Text style={styles.groupName}>{item.groupName}</Text>
+        </View>
       </View>
     );
   };
