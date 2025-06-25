@@ -2,7 +2,7 @@ import { Animated, Easing, Alert, Platform, StyleSheet, Text, View, TouchableOpa
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useRouter } from "expo-router";
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { getFeedPosts, addLikes, deletePost } from '@/services/api';
 import * as SecureStore from 'expo-secure-store';
@@ -35,6 +35,14 @@ export default function HomeScreen() {
     userDislike: boolean;
   };
 
+  const rotateAnim = useState(new Animated.Value(0))[0];
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const spinningAnimation = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -45,14 +53,8 @@ export default function HomeScreen() {
     fetchUserId();
   }, []);
 
-  const rotateAnim = useState(new Animated.Value(0))[0];
-  const spin = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
   useEffect(() => {
-    const spin = Animated.loop(
+    spinningAnimation.current = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
         duration: 2000,
@@ -60,10 +62,14 @@ export default function HomeScreen() {
         useNativeDriver: true,
       })
     );
-    if (loading) {
-      spin.start();
+  }, []);
+
+  useEffect(() => {
+    if (loading && spinningAnimation.current) {
+      rotateAnim.setValue(0); // Reinicia la animación
+      spinningAnimation.current.start();
     } else {
-      spin.stop();
+      spinningAnimation.current?.stop();
     }
   }, [loading]);
 
