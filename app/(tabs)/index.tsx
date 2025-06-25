@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from 'react';
-import { getFeedPosts, addLikes } from '@/services/api';
+import { getFeedPosts, addLikes, deletePost } from '@/services/api';
 import * as SecureStore from 'expo-secure-store';
 import { getHabitIcon } from '@/constants/habitIcons';
 
@@ -37,6 +37,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await SecureStore.getItemAsync('userId');
+      console.log(id);
       setUserId(id);
     };
     fetchUserId();
@@ -70,12 +71,24 @@ export default function HomeScreen() {
         const response = await getFeedPosts();
         const data = response.data;
 
-        //console.log(response.data);
+        if (!Array.isArray(data) || data.length === 0) {
+          setPosts([]);
+          return;
+        }
         console.log(Object.keys(response.data[0]));
         const mapped = data.map((post: any, index: number) => ({
           id: `${post.username}-${post.postDate}-${index}`,
-          ownerUserId: post._id,
-          ...post,
+          ownerUserId: post.id,
+          username: post.username,
+          userPhoto: post.userPhoto,
+          postPhoto: post.postPhoto,
+          habitName: post.habitName,
+          habitIcon: post.habitIcon,
+          postDate: post.postDate,
+          likes: post.likes,
+          dislikes: post.dislikes,
+          userLike: post.userLike,
+          userDislike: post.userDislike
         }));
 
         setPosts(mapped);
@@ -171,11 +184,65 @@ export default function HomeScreen() {
     }
   };
 
+  const handleDeletePost = async () => {
+    const postToDelete = posts.find(p => p.id === selectedPostId);
+    if (!postToDelete) return;
+
+    try {
+      await deletePost({
+        habitName: postToDelete.habitName,
+        postDate: postToDelete.postDate
+      });
+
+      setPosts((prev) => prev.filter(p => p.id !== selectedPostId));
+      setShowDeleteModal(false);
+    } catch (err) {
+      console.error("Error al eliminar el post:", err);
+      Alert.alert("Error", "No se pudo eliminar el post.");
+    }
+  };
+
   const { top } = useSafeAreaInsets();
+
+  const getTimeAgo = (postDateStr: string): string => {
+    const postDate = new Date(postDateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - postDate.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+
+    if (diffMinutes < 60) {
+      return 'Justo ahora';
+    } else if (diffHours < 24) {
+      return `Hace ${diffHours} horas`;
+    } else {
+      const diffDays = Math.floor(diffHours / 24);
+      return `Hace ${diffDays} días`;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>BLOOMPO</Text>
+            <Image
+              source={require('../../assets/icons/bloompo-icon.png')}
+              style={styles.headerIcon}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => router.push("/invitation/invitations")} style={styles.headerActionIcon}>
+              <IconSymbol name="bell" size={26} color="black" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push("/create-post/camera")}>
+              <IconSymbol name="plus.circle" size={26} color="black" />
+            </TouchableOpacity>
+          </View>
+        </View>
         {/* Condicional para loading */}
         {loading ? (
           <View style={styles.centered}>
@@ -192,111 +259,104 @@ export default function HomeScreen() {
           <View style={styles.centered}>
             <Text>{error}</Text>
           </View>
-        ) : (
-          // Vista principal cuando todo está bien
-          <>
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.headerLeft}>
-                <Text style={styles.headerTitle}>BLOOMPO</Text>
-                <Image
-                  source={require('../../assets/icons/bloompo-icon.png')}
-                  style={styles.headerIcon}
-                  resizeMode="contain"
-                />
-              </View>
-              <View style={styles.headerRight}>
-                <TouchableOpacity onPress={() => router.push("/invitation/invitations")} style={styles.headerActionIcon}>
-                  <IconSymbol name="bell" size={26} color="black" />
-                </TouchableOpacity>
+        ) : posts.length === 0 ? (
+          // Condicional para no hay posts
+          <View style={styles.centered}>
+            <Text style={styles.emptyText}>¡Ups! No hay posts nuevas :(</Text>
+            <Image
+              source={require('../../assets/images/bloompo-sad.png')}
+              style={styles.emptyImage}
+              resizeMode="contain"
+            />
+          </View>
+        ) :
 
-                <TouchableOpacity onPress={() => router.push("/create-post/camera")}>
-                  <IconSymbol name="plus.circle" size={26} color="black" />
-                </TouchableOpacity>
-              </View>
-            </View>
+          (
+            // Vista principal cuando todo está bien
+            <>
+              {/* Header */}
 
-            {/* Feed */}
-            <FlatList
-              data={posts}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={styles.feedContainer}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <View style={styles.postContainer}>
-                  <View style={styles.userRow}>
-                    <Image source={item.userPhoto
-                      ? { uri: item.userPhoto }
-                      : require('../../assets/images/avatar_placeholder.png')} style={styles.avatar} />
-                    <Text style={styles.username}>{item.username ?? 'Username'}</Text>
-                    {'6854c675209ed952fb3f7a69' === userId && (
-                      <TouchableOpacity
-                        style={styles.moreButton}
-                        onPress={() => {
-                          setSelectedPostId(item.id);
-                          setShowDeleteModal(true);
-                        }}
-                      >
-                        <Text style={{ fontSize: 22, marginLeft: 'auto' }}>⋮</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
 
-                  <Image source={{ uri: item.postPhoto }} style={styles.postImage} resizeMode="cover" />
 
-                  <View style={styles.habitSection}>
-                    <View style={styles.habitRow}>
-                      <Image source={getHabitIcon(item.habitIcon ?? 'gymlogo.png')} style={styles.habitIcon} />
-                      <Text style={styles.habitName}>{item.habitName ?? 'Habito'}</Text>
-                      <View style={styles.buttonRow}>
-                        <TouchableOpacity onPress={() => handleLike(item.id)} style={styles.reactionButton}>
-                          <IconSymbol
-                            name={item.userLike ? 'hand.thumbsup.fill' : 'hand.thumbsup'}
-                            size={26}
-                            color='grey'
-                          />
-                          <Text style={styles.reactionCount}>{item.likes?.length ?? 0}</Text>
+              {/* Feed */}
+              <FlatList
+                data={posts}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.feedContainer}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => (
+                  <View style={styles.postContainer}>
+                    <View style={styles.userRow}>
+                      <Image source={item.userPhoto
+                        ? { uri: item.userPhoto }
+                        : require('../../assets/images/avatar_placeholder.png')} style={styles.avatar} />
+                      <Text style={styles.username}>{item.username ?? 'Username'}</Text>
+                      {item.ownerUserId === userId && (
+                        <TouchableOpacity
+                          style={styles.moreButton}
+                          onPress={() => {
+                            setSelectedPostId(item.id);
+                            setShowDeleteModal(true);
+                          }}
+                        >
+                          <Text style={{ fontSize: 22, marginLeft: 'auto' }}>⋮</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDislike(item.id)} style={styles.reactionButton} >
-                          <IconSymbol
-                            name={item.userDislike ? 'hand.thumbsdown.fill' : 'hand.thumbsdown'}
-                            size={26}
-                            color='grey'
-                          />
-                          <Text style={styles.reactionCount}>{item.dislikes?.length ?? 0}</Text>
-                        </TouchableOpacity>
+                      )}
+                    </View>
+
+                    <Image source={{ uri: item.postPhoto }} style={styles.postImage} resizeMode="cover" />
+
+                    <View style={styles.habitSection}>
+                      <View style={styles.habitRow}>
+                        <Image source={getHabitIcon(item.habitIcon)} style={styles.habitIcon} />
+                        <Text style={styles.habitName}>{item.habitName ?? 'Habito'}</Text>
+                        <View style={styles.buttonRow}>
+                          <TouchableOpacity onPress={() => handleLike(item.id)} style={styles.reactionButton}>
+                            <IconSymbol
+                              name={item.userLike ? 'hand.thumbsup.fill' : 'hand.thumbsup'}
+                              size={26}
+                              color='grey'
+                            />
+                            <Text style={styles.reactionCount}>{item.likes?.length ?? 0}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleDislike(item.id)} style={styles.reactionButton} >
+                            <IconSymbol
+                              name={item.userDislike ? 'hand.thumbsdown.fill' : 'hand.thumbsdown'}
+                              size={26}
+                              color='grey'
+                            />
+                            <Text style={styles.reactionCount}>{item.dislikes?.length ?? 0}</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
+                      <Text style={styles.timeAgo}>{getTimeAgo(item.postDate)}</Text>
                     </View>
                   </View>
+                )}
+              />
+              <Modal
+                visible={showDeleteModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowDeleteModal(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <Text style={{ marginBottom: 16 }}>¿Eliminar este post?</Text>
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={handleDeletePost}
+                    >
+                      <Text style={{ color: 'white' }}>Eliminar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setShowDeleteModal(false)}>
+                      <Text style={{ color: 'gray', marginTop: 10 }}>Cancelar</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              )}
-            />
-            <Modal
-              visible={showDeleteModal}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowDeleteModal(false)}
-            >
-              <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
-                  <Text style={{ marginBottom: 16 }}>¿Eliminar este post?</Text>
-                  <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={() => {
-                      setPosts((prev) => prev.filter(p => p.id !== selectedPostId));
-                      setShowDeleteModal(false);
-                    }}
-                  >
-                    <Text style={{ color: 'white' }}>Eliminar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setShowDeleteModal(false)}>
-                    <Text style={{ color: 'gray', marginTop: 10 }}>Cancelar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal>
-          </>
-        )}
+              </Modal>
+            </>
+          )}
       </View>
     </SafeAreaView>
   );
@@ -450,5 +510,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 80,
     height: 80,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '500',
+    marginBottom: 16,
+    textAlign: 'center',
+    color: '#444',
+  },
+  emptyImage: {
+    width: 150,
+    height: 150,
+    opacity: 0.7,
+  },
+  timeAgo: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 4,
+    marginLeft: 2,
   },
 });

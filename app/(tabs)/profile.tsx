@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {Animated,Easing, ActivityIndicator, View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, Alert, TextInput } from 'react-native';
+import { Animated, Easing, ActivityIndicator, View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, Alert, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getUserData, editUser } from '@/services/api';
 import { Colors } from "@/constants/Colors";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
+import * as SecureStore from 'expo-secure-store';
 
 
 export default function ProfileScreen() {
@@ -15,13 +17,12 @@ export default function ProfileScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const rotateAnim = useState(new Animated.Value(0))[0];
+  const router = useRouter();
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
-
-
 
   type User = {
     id: string,
@@ -111,8 +112,18 @@ export default function ProfileScreen() {
     } catch (err) {
       console.error("Error al guardar:", err);
       Alert.alert("Error", "Hubo un problema al guardar los cambios.");
-    }finally {
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await SecureStore.deleteItemAsync('token');
+      await SecureStore.deleteItemAsync('userId');
+      router.replace('/(auth)');
+    } catch (err) {
+      Alert.alert("Error", "No se pudo cerrar sesión.");
     }
   };
 
@@ -125,16 +136,16 @@ export default function ProfileScreen() {
         useNativeDriver: true,
       })
     );
-  
+
     if (loading) {
       spinning.start();
     } else {
       spinning.stop();
     }
-  
+
     return () => spinning.stop();
   }, [loading]);
-  
+
 
 
   useEffect(() => {
@@ -147,7 +158,7 @@ export default function ProfileScreen() {
       } catch (error) {
         console.error('Error al obtener usuario:', error);
         Alert.alert('Error', 'No se pudo cargar usuario.');
-      }finally {
+      } finally {
         setLoading(false);
       }
     };
@@ -167,21 +178,21 @@ export default function ProfileScreen() {
         </View>
       </SafeAreaView>
     );
-  }  
+  }
 
   return (
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
       <View style={styles.container}>
 
-      {loading && (
-  <View style={styles.centered}>
-    <ActivityIndicator size="large" />
-    <Animated.Image
-      source={require('../../assets/images/bloompo-cowboy.png')}
-      style={[styles.rotatingImage, { transform: [{ rotate: spin }] }]}
-    />
-  </View>
-)}
+        {loading && (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" />
+            <Animated.Image
+              source={require('../../assets/images/bloompo-cowboy.png')}
+              style={[styles.rotatingImage, { transform: [{ rotate: spin }] }]}
+            />
+          </View>
+        )}
 
 
         {isEditing ? (
@@ -248,6 +259,10 @@ export default function ProfileScreen() {
               <Text style={styles.editButtonText}>Editar perfil</Text>
 
             </TouchableOpacity>
+            <TouchableOpacity style={[styles.editButton, styles.logoutButton]} onPress={handleLogout}>
+              <Text style={[styles.editButtonText, { color: '#444' }]}>Cerrar sesión</Text>
+            </TouchableOpacity>
+
           </>
 
         )}
@@ -382,4 +397,8 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
   },
+  logoutButton: {
+    backgroundColor: '#ccc', 
+    marginTop: 20 
+  }
 });
