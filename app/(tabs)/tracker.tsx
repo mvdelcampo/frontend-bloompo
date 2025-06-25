@@ -17,7 +17,8 @@ import {
 	getGroupRanking,
 	getHabitsFromGroup,
 	getHabitsFromUser,
-	deleteHabit
+	deleteHabit,
+	addGroupToHabit
 } from "../../services/api";
 
 import { Collapsible } from "@/components/Collapsible";
@@ -28,18 +29,9 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
+import { getHabitIcon } from "@/constants/habitIcons";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const icons = {
-	// TODO usar lo de Vale?
-	gym: require("@/assets/icons/gymlogo.png"),
-	art: require("@/assets/icons/artlogo.png"),
-	healthy: require("@/assets/icons/healthylogo.png"),
-	meditate: require("@/assets/icons/meditatelogo.png"),
-	read: require("@/assets/icons/reedlogo.png"),
-	sleep: require("@/assets/icons/sleeplogo.png"),
-	walk: require("@/assets/icons/walklogo.png"),
-	water: require("@/assets/icons/waterlogo.png"),
-};
 
 type Group = {
 	id: string;
@@ -77,6 +69,7 @@ type MyHabit = {
 const daysLabels = ["L", "M", "X", "J", "V", "S", "D"];
 
 export default function TrackerScreen() {
+	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const [selectedGroupId, setSelectedGroupId] = useState("1"); // grupo por defecto YO
 	const yo: Group = {
@@ -110,414 +103,423 @@ export default function TrackerScreen() {
 		}
 	}
 
+
 	// Cargar grupos y hábitos al iniciar
 	useFocusEffect(
 		useCallback(() => {
-		const fetchData = async () => {
-			try {
-				const responseGroups = await getUserGroups();
-				setGroups([yo, ...responseGroups.data.groups]);
-			} catch (error) {
-				console.error("Error al cargar grupos:", error);
-			}
-
-			if (selectedGroupId === "1") {
+			const fetchData = async () => {
 				try {
-					const responseHabits = await getHabitsFromUser();
-					//console.log(responseHabits.data);
-					setMyHabits(responseHabits.data.habits || []);
+					const responseGroups = await getUserGroups();
+					setGroups([yo, ...responseGroups.data.groups]);
 				} catch (error) {
-					console.error("Error al cargar mis habitos:", error);
-				}
-			} else {
-				try {
-					const responseRanking = await getGroupRanking(
-						selectedGroupId
-					);
-					setRanking(responseRanking.data.slice(0, 5) || []);
-					//console.log("ranking", responseRanking.data);
-				} catch (error) {
-					console.error("Error al cargar ranking:", error);
+					console.error("Error al cargar grupos:", error);
 				}
 
-				try {
-					const responseHabits = await getHabitsFromGroup(
-						selectedGroupId
-					);
-					//console.log(responseHabits.data);
-					const flatHabits = responseHabits.data.flatMap(
-						(user: any) => {
-							//console.log("Foto del usuario:", user.photoInBase64);
-							return user.habits.map((habit: any) => ({
-								name: habit.name,
-								icon: habit.icon,
-								frequency: habit.frequency,
-								weekly_counter: habit.weekly_counter,
-								username: user.username,
-								photo: user.photo,
-								photoInBase64: user.photoInBase64,
-							}));
-						}
-					);
-					setHabits(flatHabits || []);
-				} catch (error) {
-					console.error("Error al cargar habitos:", error);
+				if (selectedGroupId === "1") {
+					try {
+						const responseHabits = await getHabitsFromUser();
+						//console.log(responseHabits.data);
+						setMyHabits(responseHabits.data.habits || []);
+					} catch (error) {
+						console.error("Error al cargar mis habitos:", error);
+					}
+				} else {
+					try {
+						const responseRanking = await getGroupRanking(
+							selectedGroupId
+						);
+						setRanking(responseRanking.data.slice(0, 5) || []);
+						//console.log("ranking", responseRanking.data);
+					} catch (error) {
+						console.error("Error al cargar ranking:", error);
+					}
+
+					try {
+						const responseHabits = await getHabitsFromGroup(
+							selectedGroupId
+						);
+						//console.log(responseHabits.data);
+						const flatHabits = responseHabits.data.flatMap(
+							(user: any) => {
+								//console.log("Foto del usuario:", user.photoInBase64);
+								return user.habits.map((habit: any) => ({
+									name: habit.name,
+									icon: habit.icon,
+									frequency: habit.frequency,
+									weekly_counter: habit.weekly_counter,
+									username: user.username,
+									photo: user.photo,
+									photoInBase64: user.photoInBase64,
+								}));
+							}
+						);
+						setHabits(flatHabits || []);
+					} catch (error) {
+						console.error("Error al cargar habitos:", error);
+					}
 				}
-			}
-		};
-		fetchData();
+			};
+			fetchData();
 		}, [selectedGroupId])
 	);
 
 	return (
 		<>
-			<SafeAreaView style={styles.safeArea}>
-				<View style={styles.container}>
-					{/* Groups */}
-					<View style={styles.groupsSection}>
-						<View style={styles.header}>
-							<Text style={styles.sectionText}>Grupos</Text>
-							<View style={styles.headerRight}>
-								{selectedGroupId !== "1" && (
+			<ScrollView
+				style={{ flex: 1, backgroundColor: "#fff", paddingBottom: insets.bottom + 60 }}
+				contentContainerStyle={{ flexGrow: 1 }}
+			>
+				<SafeAreaView style={styles.safeArea}>
+					<View style={styles.container}>
+						{/* Groups */}
+						<View style={styles.groupsSection}>
+							<View style={styles.header}>
+								<Text style={styles.sectionText}>Grupos</Text>
+								<View style={styles.headerRight}>
+									{selectedGroupId !== "1" && (
+										<TouchableOpacity
+											style={styles.headerActionIcon}
+											onPress={() => {
+												router.push(
+													`/tracker/edit-group?groupId=${selectedGroupId}`
+												);
+											}}
+										>
+											<IconSymbol
+												name="pencil"
+												size={26}
+												color="black"
+											/>
+										</TouchableOpacity>
+									)}
+
 									<TouchableOpacity
-										style={styles.headerActionIcon}
-										onPress={() => {
-											router.push(
-												`/tracker/edit-group?groupId=${selectedGroupId}`
-											);
-										}}
+										onPress={() =>
+											router.push("/tracker/create-group")
+										}
 									>
 										<IconSymbol
-											name="pencil"
+											name="plus.circle"
 											size={26}
 											color="black"
 										/>
 									</TouchableOpacity>
-								)}
-
-								<TouchableOpacity
-									onPress={() =>
-										router.push("/tracker/create-group")
-									}
-								>
-									<IconSymbol
-										name="plus.circle"
-										size={26}
-										color="black"
-									/>
-								</TouchableOpacity>
+								</View>
 							</View>
-						</View>
 
-						<ScrollView
-							horizontal
-							showsHorizontalScrollIndicator={false}
-							style={{ maxHeight: 100, marginHorizontal: 10 }}
-						>
-							{groups.map((item, index) => (
-								<TouchableOpacity
-									key={index}
-									onPress={() => handlePressGroup(item.id)}
-								>
-									<View
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								style={{ maxHeight: 100, marginHorizontal: 10 }}
+							>
+								{groups.map((item, index) => (
+									<TouchableOpacity
 										key={index}
-										style={[
-											styles.box,
-											{
-												backgroundColor: item.color,
-											},
-											item.id === selectedGroupId &&
-											styles.selectedBox,
-										]}
+										onPress={() => handlePressGroup(item.id)}
 									>
-										<Text style={styles.groupName}>
-											{item.name}
-										</Text>
-									</View>
-								</TouchableOpacity>
-							))}
-						</ScrollView>
-					</View>
-
-					{/* Ranking */}
-					{selectedGroupId !== "1" && (
-						<View style={styles.rankingSection}>
-							<Text style={styles.sectionText}>Ranking</Text>
-							<View style={styles.rankingContainer}>
-								<FlatList
-									data={ranking}
-									keyExtractor={(item, index) =>
-										index.toString()
-									}
-									horizontal
-									showsHorizontalScrollIndicator={false}
-									renderItem={({ item, index }) => (
-										<View style={styles.rankItem}>
-											<Text style={styles.rank}>
-												#{index + 1}
-											</Text>
-											<Image
-												source={
-													item.photoInBase64
-														? {
-															uri: item.photoInBase64,
-														}
-														: require("../../assets/icons/bloompo-icon.png")
-												}
-												style={styles.avatar}
-											/>
-											<Text style={styles.text}>
-												{item.username}
-											</Text>
-											<Text style={styles.text}>
-												{item.score} pts
+										<View
+											key={index}
+											style={[
+												styles.box,
+												{
+													backgroundColor: item.color,
+												},
+												item.id === selectedGroupId &&
+												styles.selectedBox,
+											]}
+										>
+											<Text style={styles.groupName}>
+												{item.name}
 											</Text>
 										</View>
-									)}
-								/>
-							</View>
+									</TouchableOpacity>
+								))}
+							</ScrollView>
 						</View>
-					)}
 
-					{/* Button create habit */}
-					<TouchableOpacity
-						style={styles.button1}
-						onPress={() => router.push("/tracker/create-habit")}
-					>
-						<IconSymbol name="plus" size={24} color="black" />
-						<Text style={styles.buttonText}>Crear hábito</Text>
-					</TouchableOpacity>
-
-					{/* Selected group habits */}
-					{selectedGroupId === "1" ? (
-						<View style={styles.habitsSection}>
-							<Text style={styles.sectionText}>Mis hábitos</Text>
-							{myHabits?.length === 0 ? (
-								<Text style={styles.text3}>
-									No has cargado hábitos aún.
-								</Text>
-							) : (
-								<FlatList
-									data={myHabits}
-									keyExtractor={(item, index) =>
-										index.toString()
-									}
-									renderItem={({ item }) => (
-										<View style={styles.card}>
-											<View style={styles.habitHeader}>
-												<Image
-													source={
-														icons[
-														item.icon as keyof typeof icons
-														]
-													}
-													style={styles.habitIcon}
-													resizeMode="contain"
-												/>
-												<Text style={styles.habitTitle}>
-													{item.name}
+						{/* Ranking */}
+						{selectedGroupId !== "1" && (
+							<View style={styles.rankingSection}>
+								<Text style={styles.sectionText}>Ranking</Text>
+								<View style={styles.rankingContainer}>
+									<FlatList
+										data={ranking}
+										keyExtractor={(item, index) =>
+											index.toString()
+										}
+										horizontal
+										showsHorizontalScrollIndicator={false}
+										renderItem={({ item, index }) => (
+											<View style={styles.rankItem}>
+												<Text style={styles.rank}>
+													#{index + 1}
 												</Text>
-												<TouchableOpacity
-													style={styles.headerRight}
-													onPress={() => {
-														Alert.alert(
-															'¿Estás seguro que querés eliminar este hábito?',
-															'Esta acción no se puede deshacer.',
-															[
-																{
-																	text: 'Cancelar',
-																	style: 'cancel',
-																},
-																{
-																	text: 'Eliminar',
-																	onPress: () => handleDeleteHabit(item.name),
-																	style: 'destructive',
-																},
-															],
-															{ cancelable: true }
-														);
-													}}
-												>
-													<IconSymbol
-														name="trash"
-														size={26}
-														color= {Colors.mediumGrey}
-													/>
-												</TouchableOpacity>
-											</View>
-											<View
-												style={styles.habitCompletion}
-											>
-												<View
-													style={styles.daysContainer}
-												>
-													<View
-														style={styles.daysRow}
-													>
-														{daysLabels.map(
-															(day, index) => (
-																<View
-																	key={day}
-																	style={{
-																		alignItems:
-																			"center",
-																		marginHorizontal: 4,
-																	}}
-																>
-																	<Text
-																		style={
-																			styles.dayLabel
-																		}
-																	>
-																		{day}
-																	</Text>
-																	<View
-																		style={[
-																			styles.dayCircle,
-																			{
-																				backgroundColor:
-																					item.weekly_counter &&
-																						item
-																							.weekly_counter[
-																						index
-																						] ===
-																						1
-																						? Colors.strongPeach
-																						: Colors.lightGrey,
-																			},
-																		]}
-																	/>
-																</View>
-															)
-														)}
-													</View>
-												</View>
-												<Text style={styles.text2}>
-													{
-														(
-															item.weekly_counter ||
-															Array(7).fill(0)
-														).filter((d) => d === 1)
-															.length
-													}{" "}
-													/ {item.frequency}
-												</Text>
-											</View>
-										</View>
-									)}
-								/>
-							)}
-						</View>
-					) : (
-						<View style={styles.habitsSection}>
-							<Text style={styles.sectionText}>Hábitos</Text>
-							{habits?.length === 0 ? (
-								<>
-									<Text style={styles.text3}>
-										Nadie ha cargado hábitos aún.
-									</Text>
-									<Text style={styles.text3}>
-										¡Sé el primero!
-									</Text>
-								</>
-							) : (
-								<FlatList
-									data={habits}
-									keyExtractor={(item, index) =>
-										index.toString()
-									}
-									renderItem={({ item }) => (
-										<View style={styles.card}>
-											<View style={styles.habitHeader}>
 												<Image
 													source={
 														item.photoInBase64
 															? {
 																uri: item.photoInBase64,
 															}
-															: require("../../assets/icons/bloompo-icon.png")
+															: require('../../assets/images/avatar_placeholder.png')
 													}
 													style={styles.avatar}
 												/>
-												<Image
-													source={
-														icons[
-														item.icon as keyof typeof icons
-														]
-													}
-													style={styles.habitIcon}
-													resizeMode="contain"
-												/>
-												<Text style={styles.habitTitle}>
-													{item.name}
+												<Text style={styles.text}>
+													{item.username}
+												</Text>
+												<Text style={styles.text}>
+													{item.score} pts
 												</Text>
 											</View>
-											<View
-												style={styles.habitCompletion}
-											>
-												<View
-													style={styles.daysContainer}
-												>
+										)}
+									/>
+								</View>
+							</View>
+						)}
+
+						{/* Button create habit */}
+						<TouchableOpacity
+							style={styles.button1}
+							onPress={() => router.push("/tracker/create-habit")}
+						>
+							<IconSymbol name="plus" size={24} color="black" />
+							<Text style={styles.buttonText}>Crear hábito</Text>
+						</TouchableOpacity>
+
+						{/* Selected group habits */}
+						{selectedGroupId === "1" ? (
+							<View style={styles.habitsSection}>
+								<Text style={styles.sectionText}>Mis hábitos</Text>
+								{myHabits?.length === 0 ? (
+									<Text style={styles.text3}>
+										No has cargado hábitos aún.
+									</Text>
+								) : (
+									<View style={{ flex: 1 }}>
+										{myHabits.map((item, index) => (
+											<TouchableOpacity
+												key={`${item._id}-${item.name}-${index}`}
+												onPress={() => {
+													const habitNameParam = encodeURIComponent(item.name);
+													const habitGroupsParam = item.id_groups?.map((id: string) => `habitGroups=${encodeURIComponent(id)}`)
+														.join('&');
+
+													const url = `/tracker/edit-habit?habitName=${habitNameParam}&${habitGroupsParam}`;
+
+													router.push(url as any);
+
+												}}>
+												<View style={styles.card}>
+													<View style={styles.habitHeader}>
+														<Image
+															source={item?.icon ? getHabitIcon(item?.icon) : null}
+															style={styles.habitIcon}
+															resizeMode="contain"
+														/>
+														<Text style={styles.habitTitle}>
+															{item.name}
+														</Text>
+														<TouchableOpacity
+															style={styles.headerRight}
+															onPress={() => {
+																Alert.alert(
+																	'¿Estás seguro que querés eliminar este hábito?',
+																	'Esta acción no se puede deshacer.',
+																	[
+																		{
+																			text: 'Cancelar',
+																			style: 'cancel',
+																		},
+																		{
+																			text: 'Eliminar',
+																			onPress: () => handleDeleteHabit(item.name),
+																			style: 'destructive',
+																		},
+																	],
+																	{ cancelable: true }
+																);
+															}}
+														>
+															<IconSymbol
+																name="trash"
+																size={26}
+																color={Colors.mediumGrey}
+															/>
+														</TouchableOpacity>
+													</View>
 													<View
-														style={styles.daysRow}
+														style={styles.habitCompletion}
 													>
-														{daysLabels.map(
-															(day, index) => (
-																<View
-																	key={day}
-																	style={{
-																		alignItems:
-																			"center",
-																		marginHorizontal: 4,
-																	}}
-																>
-																	<Text
-																		style={
-																			styles.dayLabel
-																		}
-																	>
-																		{day}
-																	</Text>
-																	<View
-																		style={[
-																			styles.dayCircle,
-																			{
-																				backgroundColor:
-																					item.weekly_counter &&
-																						item
-																							.weekly_counter[
-																						index
-																						] ===
-																						1
-																						? Colors.strongPeach
-																						: Colors.lightGrey,
-																			},
-																		]}
-																	/>
-																</View>
-															)
-														)}
+														<View
+															style={styles.daysContainer}
+														>
+															<View
+																style={styles.daysRow}
+															>
+																{daysLabels.map(
+																	(day, index) => (
+																		<View
+																			key={day}
+																			style={{
+																				alignItems:
+																					"center",
+																				marginHorizontal: 4,
+																			}}
+																		>
+																			<Text
+																				style={
+																					styles.dayLabel
+																				}
+																			>
+																				{day}
+																			</Text>
+																			<View
+																				style={[
+																					styles.dayCircle,
+																					{
+																						backgroundColor:
+																							item.weekly_counter &&
+																								item
+																									.weekly_counter[
+																								index
+																								] ===
+																								1
+																								? Colors.strongPeach
+																								: Colors.lightGrey,
+																					},
+																				]}
+																			/>
+																		</View>
+																	)
+																)}
+															</View>
+														</View>
+														<Text style={styles.text2}>
+															{
+																(
+																	item.weekly_counter ||
+																	Array(7).fill(0)
+																).filter((d) => d === 1)
+																	.length
+															}{" "}
+															/ {item.frequency}
+														</Text>
 													</View>
 												</View>
-												<Text style={styles.text2}>
-													{
-														(
-															item.weekly_counter ||
-															Array(7).fill(0)
-														).filter((d) => d === 1)
-															.length
-													}{" "}
-													/ {item.frequency}
-												</Text>
+											</TouchableOpacity>
+
+										))}
+									</View>
+								)}
+							</View>
+						) : (
+							<View style={styles.habitsSection}>
+								<Text style={styles.sectionText}>Hábitos</Text>
+								{habits?.length === 0 ? (
+									<>
+										<Text style={styles.text3}>
+											Nadie ha cargado hábitos aún.
+										</Text>
+										<Text style={styles.text3}>
+											¡Sé el primero!
+										</Text>
+									</>
+								) : (
+									<View style={{ flex: 1 }}>
+										{habits.map((item, index) => (
+											<View
+												key={`${item.username}-${item.name}-${index}`}
+												style={styles.card}>
+												<View style={styles.habitHeader}>
+													<Image
+														source={
+															item.photoInBase64
+																? {
+																	uri: item.photoInBase64,
+																}
+																: require('../../assets/images/avatar_placeholder.png')
+														}
+														style={styles.avatar}
+													/>
+													<Image
+														source={
+															item?.icon ? getHabitIcon(item?.icon) : null
+														}
+														style={styles.habitIcon}
+														resizeMode="contain"
+													/>
+													<Text style={styles.habitTitle}>
+														{item.name}
+													</Text>
+												</View>
+												<View
+													style={styles.habitCompletion}
+												>
+													<View
+														style={styles.daysContainer}
+													>
+														<View
+															style={styles.daysRow}
+														>
+															{daysLabels.map(
+																(day, index) => (
+																	<View
+																		key={day}
+																		style={{
+																			alignItems:
+																				"center",
+																			marginHorizontal: 4,
+																		}}
+																	>
+																		<Text
+																			style={
+																				styles.dayLabel
+																			}
+																		>
+																			{day}
+																		</Text>
+																		<View
+																			style={[
+																				styles.dayCircle,
+																				{
+																					backgroundColor:
+																						item.weekly_counter &&
+																							item
+																								.weekly_counter[
+																							index
+																							] ===
+																							1
+																							? Colors.strongPeach
+																							: Colors.lightGrey,
+																				},
+																			]}
+																		/>
+																	</View>
+																)
+															)}
+														</View>
+													</View>
+													<Text style={styles.text2}>
+														{
+															(
+																item.weekly_counter ||
+																Array(7).fill(0)
+															).filter((d) => d === 1)
+																.length
+														}{" "}
+														/ {item.frequency}
+													</Text>
+												</View>
 											</View>
-										</View>
-									)}
-								/>
-							)}
-						</View>
-					)}
-				</View>
-			</SafeAreaView>
+										))}
+									</View>
+								)}
+							</View>
+						)}
+					</View>
+				</SafeAreaView>
+			</ScrollView>
+
 		</>
 	);
 }
@@ -526,26 +528,28 @@ const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
 		backgroundColor: "#fff",
+		paddingBottom: 20
 	},
 	container: {
 		flex: 1,
 		paddingVertical: 15,
 		paddingHorizontal: 10,
+		paddingBottom: 20
 		//justifyContent: "space-around",
 	},
 	rankingContainer: {
 		marginVertical: 10,
 		alignItems: "center",
-		flex: 1,
 		justifyContent: "space-around",
 	},
 	groupsSection: {
 		backgroundColor: Colors.superLightGrey,
 		width: "95%",
-		height: "19%",
+		height: 120,
 		justifyContent: "space-around",
 		borderRadius: 20,
 		margin: 10,
+		flexGrow:0
 	},
 	sectionText: {
 		color: Colors.mediumGrey,
@@ -553,22 +557,22 @@ const styles = StyleSheet.create({
 		textAlign: "left",
 		marginLeft: 15,
 		marginTop: 8,
-		marginBottom: 5,
 		fontWeight: "bold",
 	},
 	rankingSection: {
 		backgroundColor: Colors.superLightGrey,
 		width: "95%",
-		height: "22%",
-		justifyContent: "space-around",
+		height: 130,
+		justifyContent: "flex-start",
 		borderRadius: 20,
-		margin: 10,
+		marginBottom: 10,
+		marginHorizontal: 10,
+		flexGrow: 0
 	},
 	habitsSection: {
 		backgroundColor: Colors.superLightGrey,
 		width: "95%",
-		height: "60%",
-
+		flex: 1,
 		borderRadius: 20,
 		margin: 10,
 		paddingHorizontal: 10,
@@ -579,6 +583,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginBottom: 3,
+		marginHorizontal:5,
 	},
 	headerRight: {
 		flexDirection: "row",
@@ -608,9 +613,9 @@ const styles = StyleSheet.create({
 	},
 	box: {
 		margin: 5,
-		width: 80,
-		height: 45,
-		borderRadius: 8,
+		width: 90,
+		height: 50,
+		borderRadius: 12,
 		alignContent: "center",
 		justifyContent: "center",
 		shadowColor: "#000",
@@ -736,7 +741,7 @@ const styles = StyleSheet.create({
 	},
 	button1: {
 		width: "50%",
-		height: "8%",
+		height: 55,
 		backgroundColor: Colors.bloompoYellow,
 		borderRadius: 20,
 		padding: 5,

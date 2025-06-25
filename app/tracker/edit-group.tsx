@@ -9,7 +9,11 @@ import {
 	TouchableOpacity,
 	FlatList,
 	Alert,
+	KeyboardAvoidingView,
+	Keyboard,
+	TouchableWithoutFeedback
 } from "react-native";
+
 import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
 import { useState, useEffect } from "react";
@@ -52,6 +56,8 @@ export default function EditGroupScreen() {
 	const [groupName, setGroupName] = useState("");
 	const [petName, setPetName] = useState("");
 	const [selectedColor, setSelectedColor] = useState("");
+	const [originalFriends, setOriginalFriends] = useState<string[]>([]);
+
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -77,6 +83,7 @@ export default function EditGroupScreen() {
 					};
 					setSelectedGroup(group);
 					setFriends(group.members);
+					setOriginalFriends([...group.members]); // esta se conserva igual
 					setGroupName(group.name);
 					setPetName(group.pet_name);
 					setSelectedColor(group.color);
@@ -133,12 +140,8 @@ export default function EditGroupScreen() {
 			if (response.status == 200) {
 				console.log("Grupo editado:", response.data);
 
-				const removed = friends.filter(
-					(friend) => !selectedGroup?.members.includes(friend)
-				);
-				const added = selectedGroup?.members?.filter(
-					(member) => !friends.includes(member)
-				);
+				const added = friends.filter((f) => !originalFriends.includes(f));
+				const removed = originalFriends.filter((f) => !friends.includes(f));
 
 				for (const email of added ?? []) {
 					try {
@@ -146,11 +149,18 @@ export default function EditGroupScreen() {
 							friendEmail: email,
 							groupId: selectedGroupId,
 						});
-					} catch (invitationError) {
-						console.error(
-							`Error al invitar a ${email}:`,
-							invitationError
-						);
+					} catch (invitationError: any) {
+						//console.error(
+						//	`Error al invitar a ${email}:`,
+						//	invitationError
+						//
+						if (invitationError.response?.status === 404) {
+							Alert.alert("Error", `No se encontró ningún usuario con el correo ${email}. Verificá si lo escribiste bien.`);
+						} else {
+							console.error(`Error al invitar a ${email}:`, invitationError);
+							Alert.alert("Error", `Ocurrió un error al invitar a ${email}. Intentá nuevamente.`);
+						}
+
 					}
 				}
 
@@ -190,122 +200,127 @@ export default function EditGroupScreen() {
 					headerBackTitle: "Atrás",
 				}}
 			/>
-			<SafeAreaView style={styles.safeArea}>
-				<View style={styles.container}>
-					<View style={styles.header}>
-						<Text style={styles.title}>Editar grupo</Text>
-						<TouchableOpacity
-							style={styles.deleteIcon}
-							onPress={() => {
-								Alert.alert(
-									'¿Estás seguro que querés eliminar este grupo?',
-									'Esta acción no se puede deshacer.',
-									[
-										{
-											text: 'Cancelar',
-											style: 'cancel',
-										},
-										{
-											text: 'Eliminar',
-											onPress: () => handleDeleteGroup(),
-											style: 'destructive',
-										},
-									],
-									{ cancelable: true }
-								);
-							}}
-						>
-							<IconSymbol
-								name="trash"
-								size={26}
-								color={Colors.darkGrey}
-							/>
-						</TouchableOpacity>
-					</View>
-
-					<View style={styles.base}>
-						<Text style={styles.label}>Nombre:</Text>
-						<TextInput
-							style={styles.input}
-							value={groupName}
-							onChangeText={setGroupName}
-						/>
-						<Text style={styles.label}>Color:</Text>
-
-						<View style={styles.colorsRow}>
-							{groupsColors.map((color, index) => (
-								<TouchableOpacity
-									key={index}
-									style={[
-										styles.colorsCircle,
-										{ backgroundColor: color },
-										color === selectedColor &&
-										styles.selectedColorCircle,
-									]}
-									onPress={() => {
-										setSelectedColor(color);
-									}}
+			<KeyboardAvoidingView
+				style={{ flex: 1 }}
+				behavior={Platform.OS === "ios" ? "padding" : "height"}>
+					<View style={styles.container}>
+						<View style={styles.header}>
+							<Text style={styles.title}>Editar grupo</Text>
+							<TouchableOpacity
+								style={styles.deleteIcon}
+								onPress={() => {
+									Alert.alert(
+										'¿Estás seguro que querés eliminar este grupo?',
+										'Esta acción no se puede deshacer.',
+										[
+											{
+												text: 'Cancelar',
+												style: 'cancel',
+											},
+											{
+												text: 'Eliminar',
+												onPress: () => handleDeleteGroup(),
+												style: 'destructive',
+											},
+										],
+										{ cancelable: true }
+									);
+								}}
+							>
+								<IconSymbol
+									name="trash"
+									size={26}
+									color={Colors.darkGrey}
 								/>
-							))}
+							</TouchableOpacity>
 						</View>
 
-						<Text style={styles.label}>Miembros del grupo:</Text>
+						<View style={styles.base}>
+							<Text style={styles.label}>Nombre:</Text>
+							<TextInput
+								style={styles.input}
+								value={groupName}
+								onChangeText={setGroupName}
+							/>
+							<Text style={styles.label}>Color:</Text>
 
-						<View style={styles.emailInputContainer}>
-							<View style={styles.tagsContainer}>
-								{friends.map((friend, index) => (
-									<View key={index} style={styles.tag}>
-										<Text style={styles.tagText}>
-											{friend}
-										</Text>
-										<TouchableOpacity
-											onPress={() => removeFriend(friend)}
-										>
-											<Text style={styles.tagRemove}>
-												X
+							<View style={styles.colorsRow}>
+								{groupsColors.map((color, index) => (
+									<TouchableOpacity
+										key={index}
+										style={[
+											styles.colorsCircle,
+											{ backgroundColor: color },
+											color === selectedColor &&
+											styles.selectedColorCircle,
+										]}
+										onPress={() => {
+											setSelectedColor(color);
+										}}
+									/>
+								))}
+							</View>
+
+							<Text style={styles.label}>Miembros del grupo:</Text>
+
+							<View style={styles.emailInputContainer}>
+								<View style={styles.tagsContainer}>
+									{friends.map((friend, index) => (
+										<View key={index} style={styles.tag}>
+											<Text style={styles.tagText}>
+												{friend}
 											</Text>
+											<TouchableOpacity
+												onPress={() => removeFriend(friend)}
+											>
+												<Text style={styles.tagRemove}>
+													X
+												</Text>
+											</TouchableOpacity>
+										</View>
+									))}
+									<View style={styles.inputWithButton}>
+										<TextInput
+											placeholder="Escribe su correo electrónico"
+											value={email}
+											onChangeText={setEmail}
+											onSubmitEditing={addFriend}
+											style={styles.tagInput}
+											keyboardType="email-address"
+											autoCapitalize="none"
+										/>
+										<TouchableOpacity onPress={addFriend}>
+											<Text style={styles.addSign}>+</Text>
 										</TouchableOpacity>
 									</View>
-								))}
-								<View style={styles.inputWithButton}>
-									<TextInput
-										placeholder="Escribe su correo electrónico"
-										value={email}
-										onChangeText={setEmail}
-										onSubmitEditing={addFriend}
-										style={styles.tagInput}
-										keyboardType="email-address"
-										autoCapitalize="none"
-									/>
-									<TouchableOpacity onPress={addFriend}>
-										<Text style={styles.addSign}>+</Text>
-									</TouchableOpacity>
 								</View>
 							</View>
-						</View>
 
-						<Text style={styles.label}>
-							Nombre de la mascota grupal:
-						</Text>
-						<TextInput
-							style={styles.input}
-							placeholder="Milo"
-							value={petName}
-							onChangeText={setPetName}
-						/>
-
-						<TouchableOpacity
-							style={styles.button1}
-							onPress={handleSaveGroup}
-						>
-							<Text style={styles.buttonText}>
-								Guardar
+							<Text style={styles.label}>
+								Nombre de la mascota grupal:
 							</Text>
-						</TouchableOpacity>
+							<TextInput
+								style={styles.input}
+								placeholder="Milo"
+								value={petName}
+								onChangeText={setPetName}
+							/>
 
+							<TouchableOpacity
+								style={styles.button1}
+								onPress={handleSaveGroup}
+							>
+								<Text style={styles.buttonText}>
+									Guardar
+								</Text>
+							</TouchableOpacity>
+
+						</View>
 					</View>
-				</View>
-			</SafeAreaView>
+
+			</KeyboardAvoidingView>
+
+
 		</>
 	);
 }
@@ -393,7 +408,6 @@ const styles = StyleSheet.create({
 		color: Colors.darkGrey, // marrón oscuro
 		fontSize: 18,
 		fontWeight: "700",
-		fontFamily: "Fredoka",
 	},
 	button1: {
 		backgroundColor: Colors.bloompoYellow,

@@ -274,7 +274,6 @@ const styles = StyleSheet.create({
 		color: Colors.darkGrey, // marrón oscuro
 		fontSize: 18,
 		fontWeight: "700",
-		fontFamily: "Fredoka",
 	},
 	button1: {
 		backgroundColor: Colors.bloompoYellow,

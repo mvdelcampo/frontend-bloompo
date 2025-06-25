@@ -124,7 +124,7 @@ export default function AddPhotoScreen() {
 					)}
 					<TouchableOpacity
 						style={styles.button1}
-						onPress={() => router.replace("/(auth)/login")}
+						onPress={() => router.replace("/(tabs)")}
 					>
 						<Text style={styles.buttonText}>Omitir</Text>
 					</TouchableOpacity>

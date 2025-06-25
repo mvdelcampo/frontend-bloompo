@@ -15,18 +15,8 @@ import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { router, Stack } from "expo-router";
 import { addGroupToHabit, createHabit, getUserGroups } from "@/services/api";
+import { habitIcons } from "@/constants/habitIcons";
 
-const icons = {
-	// TODO usar lo de Vale?
-	gym: require("@/assets/icons/gymlogo.png"),
-	art: require("@/assets/icons/artlogo.png"),
-	healthy: require("@/assets/icons/healthylogo.png"),
-	meditate: require("@/assets/icons/meditatelogo.png"),
-	read: require("@/assets/icons/reedlogo.png"),
-	sleep: require("@/assets/icons/sleeplogo.png"),
-	walk: require("@/assets/icons/walklogo.png"),
-	water: require("@/assets/icons/waterlogo.png"),
-};
 
 type Group = {
 	id: string;
@@ -182,7 +172,7 @@ export default function CreateHabitScreen() {
 						<Text style={styles.label}>Elige un ícono:</Text>
 
 						<View style={styles.iconsRow}>
-							{Object.entries(icons).map(([key, source]) => (
+							{Object.entries(habitIcons).map(([key, source]) => (
 								<TouchableOpacity
 									key={key}
 									style={[
@@ -351,14 +341,12 @@ const styles = StyleSheet.create({
 		color: Colors.darkGrey, // marrón oscuro
 		fontSize: 18,
 		fontWeight: "700",
-		fontFamily: "Fredoka",
 	},
 	label2: {
 		marginBottom: 2,
 		color: Colors.darkGrey, // marrón oscuro
 		fontSize: 16,
 		fontWeight: "600",
-		fontFamily: "Fredoka",
 		textAlign: "center",
 	},
 	button1: {
@@ -480,9 +468,9 @@ const styles = StyleSheet.create({
 		marginTop: 8,
 		marginBottom: 8,
 		margin: 5,
-		width: 80,
-		height: 40,
-		borderRadius: 8,
+		width: 90,
+		height: 50,
+		borderRadius: 12,
 		alignContent: "center",
 		justifyContent: "center",
 		shadowColor: "#000",
