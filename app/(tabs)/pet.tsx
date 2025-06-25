@@ -17,7 +17,7 @@ export default function PetScreen() {
     id: string;
     groupName: string;
     petName: string;
-    petStatus: 'superhappy' | 'happy' | 'sad';
+    petStatus: 'super happy' | 'happy' | 'sad';
   };
 
   const screenWidth = Dimensions.get('window').width;
@@ -31,7 +31,7 @@ export default function PetScreen() {
       const visibleItem = viewableItems[0].item as Pet;
       const index = petsData.findIndex(p => p.id === visibleItem.id);
       const health =
-        visibleItem.petStatus === 'superhappy' ? 12 :
+        visibleItem.petStatus === 'super happy' ? 12 :
           visibleItem.petStatus === 'happy' ? 10 :
             4;
       setCurrentHealth(health);
@@ -62,7 +62,7 @@ export default function PetScreen() {
 
         if (pets.length > 0) {
           setCurrentHealth(
-            pets[0].pet_status === 'superhappy' ? 12 :
+            pets[0].pet_status === 'super happy' ? 12 :
               pets[0].pet_status === 'happy' ? 10 :
                 4
           );
@@ -91,7 +91,7 @@ export default function PetScreen() {
 
   const renderPet = ({ item }: { item: Pet }) => {
     let imageSource;
-    if (item.petStatus === 'superhappy') {
+    if (item.petStatus === 'super happy') {
       imageSource = require('../../assets/images/bloompo-cowboy.png');
     } else if (item.petStatus === 'happy') {
       imageSource = require('../../assets/images/happy-bloompo.png');
