@@ -191,7 +191,8 @@ export default function ProfileScreen() {
                 Cambiar foto de perfil
               </Text>
               <Image
-                source={{ uri: selectedImage || user?.photoBase64 }}
+                source={{ uri: selectedImage || (user?.photoBase64 ?
+              user?.photoBase64 : require('../../assets/images/avatar_placeholder.png'))}}
                 style={styles.avatar}
               />
 
