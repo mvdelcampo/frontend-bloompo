@@ -30,7 +30,10 @@ export default function PetScreen() {
     if (viewableItems.length > 0) {
       const visibleItem = viewableItems[0].item as Pet;
       const index = petsData.findIndex(p => p.id === visibleItem.id);
-      const health = visibleItem.petStatus === 'happy' ? 10 : 4;
+      const health =
+        visibleItem.petStatus === 'superhappy' ? 12 :
+          visibleItem.petStatus === 'happy' ? 10 :
+            4;
       setCurrentHealth(health);
       setCurrentIndex(index);
     }
@@ -53,12 +56,16 @@ export default function PetScreen() {
           petName: pet.pet_name,
           petStatus: pet.pet_status
         }));
-        
+
         setPetsData(mappedPets);
         setCoins(user?.coins || 0);
 
         if (pets.length > 0) {
-          setCurrentHealth(pets[0].pet_status === 'happy' ? 10 : 4);
+          setCurrentHealth(
+            pets[0].pet_status === 'superhappy' ? 12 :
+              pets[0].pet_status === 'happy' ? 10 :
+                4
+          );
         }
       } catch (error) {
         console.error('Error al obtener mascotas o monedas:', error);
@@ -83,10 +90,14 @@ export default function PetScreen() {
   };
 
   const renderPet = ({ item }: { item: Pet }) => {
-    const imageSource =
-      item.petStatus === 'happy'
-        ? require('../../assets/images/bloompo.png')
-        : require('../../assets/images/bloompo-sad.png');
+    let imageSource;
+    if (item.petStatus === 'superhappy') {
+      imageSource = require('../../assets/images/bloompo-cowboy.png');
+    } else if (item.petStatus === 'happy') {
+      imageSource = require('../../assets/images/happy-bloompo.png');
+    } else {
+      imageSource = require('../../assets/images/bloompo-sad.png');
+    }
 
     return (
       <View style={[styles.petContainer, { width: screenWidth * 0.8 }]}>
@@ -99,7 +110,7 @@ export default function PetScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ImageBackground
-        source={require('../../assets/images/Happy-background.png')} // o donde tengas tu imagen
+        source={require('../../assets/images/Happy-background.png')}
         style={styles.background}
         resizeMode="cover"
       >
@@ -238,7 +249,7 @@ const styles = StyleSheet.create({
   },
   rightColumn: {
     alignItems: 'flex-end',
-    gap: 8, // si tu versión lo soporta
+    gap: 8,
   },
 
   storeIcon: {
@@ -247,11 +258,11 @@ const styles = StyleSheet.create({
   coinDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#6B8596', // gris azulado
+    backgroundColor: '#6B8596',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    gap: 6, // si tu versión lo soporta
+    gap: 6,
   },
   coinAmount: {
     color: 'white',
