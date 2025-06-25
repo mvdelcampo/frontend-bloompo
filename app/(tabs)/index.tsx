@@ -2,10 +2,12 @@ import { Animated, Easing, Alert, Platform, StyleSheet, Text, View, TouchableOpa
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useRouter } from "expo-router";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { getFeedPosts, addLikes, deletePost } from '@/services/api';
 import * as SecureStore from 'expo-secure-store';
 import { getHabitIcon } from '@/constants/habitIcons';
+
 
 
 export default function HomeScreen() {
@@ -65,44 +67,46 @@ export default function HomeScreen() {
     }
   }, [loading]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getFeedPosts();
-        const data = response.data;
+  const fetchFeed = async () => {
+    try {
+      setLoading(true);
+      const response = await getFeedPosts();
+      const data = response.data;
 
-        if (!Array.isArray(data) || data.length === 0) {
-          setPosts([]);
-          return;
-        }
-        console.log(Object.keys(response.data[0]));
-        const mapped = data.map((post: any, index: number) => ({
-          id: `${post.username}-${post.postDate}-${index}`,
-          ownerUserId: post.id,
-          username: post.username,
-          userPhoto: post.userPhoto,
-          postPhoto: post.postPhoto,
-          habitName: post.habitName,
-          habitIcon: post.habitIcon,
-          postDate: post.postDate,
-          likes: post.likes,
-          dislikes: post.dislikes,
-          userLike: post.userLike,
-          userDislike: post.userDislike
-        }));
-
-        setPosts(mapped);
-
-      } catch (e) {
-        console.error(e);
-        setError('Error al obtener los posts');
-      } finally {
-        setLoading(false);
+      if (!Array.isArray(data) || data.length === 0) {
+        setPosts([]);
+        return;
       }
-    };
 
-    fetchData();
-  }, []);
+      const mapped = data.map((post: any, index: number) => ({
+        id: `${post.username}-${post.postDate}-${index}`,
+        ownerUserId: post.id,
+        username: post.username,
+        userPhoto: post.userPhoto,
+        postPhoto: post.postPhoto,
+        habitName: post.habitName,
+        habitIcon: post.habitIcon,
+        postDate: post.postDate,
+        likes: post.likes,
+        dislikes: post.dislikes,
+        userLike: post.userLike,
+        userDislike: post.userDislike
+      }));
+
+      setPosts(mapped);
+    } catch (e) {
+      console.error(e);
+      setError('Error al obtener los posts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchFeed();
+    }, [])
+  );
 
   const handleLike = async (postId: string) => {
     if (!userId) {
