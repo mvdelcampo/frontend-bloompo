@@ -31,8 +31,8 @@ export default function PetScreen() {
       const visibleItem = viewableItems[0].item as Pet;
       const index = petsData.findIndex(p => p.id === visibleItem.id);
       const health =
-        visibleItem.petStatus === 'super happy' ? 12 :
-          visibleItem.petStatus === 'happy' ? 10 :
+        visibleItem.petStatus === 'super happy' ? 10 :
+          visibleItem.petStatus === 'happy' ? 7 :
             4;
       setCurrentHealth(health);
       setCurrentIndex(index);
@@ -62,8 +62,8 @@ export default function PetScreen() {
 
         if (pets.length > 0) {
           setCurrentHealth(
-            pets[0].pet_status === 'super happy' ? 12 :
-              pets[0].pet_status === 'happy' ? 10 :
+            pets[0].pet_status === 'super happy' ? 10 :
+              pets[0].pet_status === 'happy' ? 7 :
                 4
           );
         }
