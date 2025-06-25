@@ -208,12 +208,17 @@ export default function HomeScreen() {
     const postDate = new Date(postDateStr);
     const now = new Date();
     const diffMs = now.getTime() - postDate.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    if (diffHours < 24) {
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+
+    if (diffMinutes < 60) {
+      return 'Justo ahora';
+    } else if (diffHours < 24) {
       return `Hace ${diffHours} horas`;
+    } else {
+      const diffDays = Math.floor(diffHours / 24);
+      return `Hace ${diffDays} días`;
     }
-    const diffDays = Math.floor(diffHours / 24);
-    return `Hace ${diffDays} días`;
   };
 
   return (
